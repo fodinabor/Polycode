@@ -89,6 +89,7 @@
 #include "PolySceneSprite.h"
 #include "PolySceneEntityInstance.h"
 #include "PolyGlobals.h"
+#include "PolyCL.h"
 
 #ifdef _WINDOWS
 #include "PolyWinCore.h"

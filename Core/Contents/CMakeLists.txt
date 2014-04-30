@@ -19,7 +19,7 @@ SET(polycore_SRCS
     Source/PolyEventHandler.cpp
     Source/PolyFixedShader.cpp
     Source/PolyFont.cpp
-	Source/PolyFontGlyphSheet.cpp
+    Source/PolyFontGlyphSheet.cpp
     Source/PolyFontManager.cpp
     Source/PolyGLCubemap.cpp
     Source/PolyGLRenderer.cpp
@@ -85,8 +85,8 @@ SET(polycore_SRCS
     Source/PolySceneEntityInstance.cpp
 )
 
-SET(polycore_HDRS
-    Include/OSBasics.h
+SET(polycore_HDRS 
+	Include/OSBasics.h
     Include/PolyBezierCurve.h
     Include/PolyBone.h
     Include/PolyCamera.h
@@ -115,6 +115,7 @@ SET(polycore_HDRS
     Include/PolyGLSLShaderModule.h
     Include/PolyGLTexture.h
     Include/PolyGLVertexBuffer.h
+    Include/PolyCL.h
     Include/PolyImage.h
     Include/PolyInputEvent.h
     Include/PolyInputKeys.h
@@ -149,7 +150,7 @@ SET(polycore_HDRS
     Include/PolySound.h
     Include/PolySoundManager.h
     Include/PolyString.h
-	Include/PolyTextMesh.h
+    Include/PolyTextMesh.h
     Include/PolyTexture.h
     Include/PolyThreaded.h
     Include/PolyTimer.h
