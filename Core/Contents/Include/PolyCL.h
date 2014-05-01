@@ -42,19 +42,19 @@ namespace Polycode {
 	class _PolyExport PolyCL : public PolyBase {
 	public:
 
-		PolyCL(String kernelSource, String kernelName, std::vector< OpType > arrays, OpType result, std::vector<size_t> size) {
+		PolyCL(String kernelSource, String kernelName, std::vector< OpType > arrays, OpType *result) {
 			try {
 				init();
 				buildProgram(kernelSource);
 				createKernel(kernelName);
-				createBuffers(arrays, size);
+				createBuffers(arrays);
 				executeKernel();
 				cleanBuffers();
 				success = true;
 			}
 			catch (cl::Error& err) {
 				Logger::log("Error: %s\n", err.what());
-				Logger::log("Code: %d\n", err.err());
+				Logger::log("Error Code: %d\n", err.err());
 				Logger::log("Build log: %d\n", programCL.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devicesCL[0]));
 
 				success = false;
@@ -65,38 +65,10 @@ namespace Polycode {
 			init();
 		}
 
-		void createBuffers(std::vector< OpType > arrays, std::vector<size_t> size) {
-			buffer[size.size()];
-			int i = 0;
-			for (i = 0; i < size.size(); i++) {
-				Logger::log("Allocating Buffer %d\n", i);
-				for (int k = 0; k < size[i] / sizeof(OpType); k++) {
-					Logger::log("CoA %d\n", arrays[i][k]);
-				}
-				buffer[i] = cl::Buffer(contextCL, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size[i], arrays[i]);
-				Logger::log("Buffer %d allocated\n", i);
-				kernelCL.setArg(i, buffer[i]);
-				Logger::log("Buffer %d set\n", i);
-			}
-			i++;
-			result_buffer = cl::Buffer(contextCL, CL_MEM_WRITE_ONLY, length*sizeof(OpType));
-			kernelCL.setArg(i, result_buffer);
-		}
-
-		void executeKernel() {
-			queueCL.enqueueNDRangeKernel(kernelCL, cl::NullRange, cl::NDRange(length), cl::NullRange, NULL, &event);
-			event.wait();
-			queueCL.enqueueReadBuffer(result_buffer, CL_TRUE, 0, sizeof(OpType)*length, (OpType)result);
-			for (int i = 0; i < length; i++) {
-				Logger::log("Result: %d", result[i]);
-			}
-		}
-
-
 		void init() {
 			if (!setPlatforms()) {
 				Logger::log("OpenCL disabled!\n");
-				exit(EXIT_SUCCESS);
+				exit(EXIT_FAILURE);
 			}
 			else {
 				setDevicesFromPlatform(platformsCL[0]);
@@ -104,23 +76,16 @@ namespace Polycode {
 			}
 		}
 
-
 		bool setPlatforms() {
-
 			cl::Platform::get(&platformsCL);
 			if (platformsCL.size() == 0) {
 				Logger::log("Platform fail\n");
 				return false;
 			}
 			else {
-				//std::string platformVendor;
-				//platformCL.getInfo(CL_PLATFORM_VENDOR, &platformVendor);
-				//vendorName = platformVendor;
-				//Logger::log("OpenCL Platform Vendor: %d\n", vendorName.c_str());
 				return true;
 			}
 		}
-
 
 		bool setDevicesFromPlatform(const cl::Platform& platform) {
 
@@ -140,25 +105,19 @@ namespace Polycode {
 			defaultDeviceCL = devicesCL[0];
 			setComputeUnits();
 			defaultDeviceCL.getInfo(CL_DEVICE_NAME, &deviceName);
+			defaultDeviceCL.getInfo(CL_DEVICE_VENDOR, &vendorName);
 
-			Logger::log("OpenCL Device found: %s\n", deviceName.c_str());
+			Logger::log("OpenCL Device found: %s %s\n", vendorName.c_str(), deviceName.c_str());
 			Logger::log("Units: %d\n", computeUnits);
 
 			return true;
 
 		}
 
-
-		void setDefaultDevice(cl::Device newdefDevice) {
-			defaultDeviceCL = newdefDevice;
-		}
-
-
 		void createContext() {
 			contextCL = cl::Context(devicesCL);
-			cl::CommandQueue queueCL(contextCL, defaultDeviceCL);
+			queueCL = cl::CommandQueue(contextCL, defaultDeviceCL);
 		}
-
 
 		void buildProgram(String kernelSource) {
 			sourcesCL = cl::Program::Sources(1, std::make_pair(kernelSource.c_str(), kernelSource.length()));
@@ -167,31 +126,57 @@ namespace Polycode {
 			programCL.build(devicesCL);
 		}
 
-
 		void createKernel(String kernelName) {
 			kernelCL = cl::Kernel(programCL, kernelName.c_str());
 		}
 
+		void createBuffers(std::vector< OpType > arrays) {
+			for (int i = 0; i < arrays.size(); i++) {
+				Logger::log("Allocating Buffer %d\n", i);
+				for (int k = 0; k < length; k++) {
+					Logger::log("CoA %d\n", arrays[i][k]);
+				}
+				buffer.push_back(cl::Buffer(contextCL, CL_MEM_READ_WRITE, sizeof(OpType)*length));
+				queueCL.enqueueWriteBuffer(buffer[i], CL_TRUE, 0, sizeof(OpType)*length, arrays[i]);
+				Logger::log("Buffer %d allocated\n", i);
+				kernelCL.setArg(i, buffer[i]);
+				Logger::log("Buffer %d set\n", i);
+			}
+			result_buffer = cl::Buffer(contextCL, CL_MEM_WRITE_ONLY, length*sizeof(OpType));
+			kernelCL.setArg(arrays.size(), result_buffer);
+		}
+
+		void executeKernel() {
+			Logger::log("test0\n");
+			queueCL.enqueueNDRangeKernel(kernelCL, cl::NullRange, cl::NDRange(length), cl::NullRange, NULL, &event);
+			Logger::log("test1\n");
+			event.wait();
+			Logger::log("test2\n");
+			queueCL.enqueueReadBuffer(result_buffer, CL_TRUE, 0, sizeof(OpType)*length, (OpType)result);
+			for (int i = 0; i < length; i++) {
+				Logger::log("Result: %d", result[i]);
+			}
+		}
 
 		void cleanBuffers() {
 			buffer.~vector();
 		}
 
+		void setDefaultDevice(cl::Device newdefDevice) {
+			defaultDeviceCL = newdefDevice;
+		}
 
 		void setComputeUnits() {
 			defaultDeviceCL.getInfo(CL_DEVICE_MAX_COMPUTE_UNITS, &computeUnits);
 		}
 
-
 		int getComputeUnits() {
 			return computeUnits;
 		}
 
-
 		cl::Device getDefaultDevice() {
 			return defaultDeviceCL;
 		}
-
 
 		cl::vector< cl::Platform > getPlatforms() {
 			return platformsCL;
@@ -221,8 +206,8 @@ namespace Polycode {
 		cl::Event event;
 
 		bool success;
-		String vendorName;
-		String deviceName;
+		std::string vendorName;
+		std::string deviceName;
 		int computeUnits;
 		OpType result;
 	};
