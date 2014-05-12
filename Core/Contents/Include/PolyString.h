@@ -209,26 +209,23 @@ namespace Polycode {
 			*/																															
 			wchar_t *getWDataWithEncoding(int encoding);
 
-
 			/**
 			* Returns the size of the data with the specified encoding. Currently the only supported encoding is String::ENCODING_UTF8
 			* @param encoding The encoding to use.
 			* @return The size the data would take up if returned with this encoding.
 			* @see getDataWithEncoding()
-			*/																		
-			
+			*/
+			size_t getDataSizeWithEncoding(int encoding) const;
 
-			void append(const char c);
-
-			size_t getDataSizeWithEncoding(int encoding) const;					
-			
 			/**
 			* Sets the data for the string using specified encoding.
 			* @param data Data to set the string with.
 			* @param encoding The encoding to use.
-			*/																																		
+			*/
 			void setDataWithEncoding(char *data, int encoding);
-			
+
+			void append(const char c);
+
 			/**
 			* Checks if the string is a number
 			* @return true if the string is a number

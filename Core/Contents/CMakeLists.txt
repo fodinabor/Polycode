@@ -115,7 +115,6 @@ SET(polycore_HDRS
     Include/PolyGLSLShaderModule.h
     Include/PolyGLTexture.h
     Include/PolyGLVertexBuffer.h
-    Include/PolyCL.h
     Include/PolyImage.h
     Include/PolyInputEvent.h
     Include/PolyInputKeys.h
@@ -172,6 +171,13 @@ SET(polycore_HDRS
     Include/PolySceneSprite.h
     Include/PolySceneEntityInstance.h
 )
+
+IF(OPENCL_FOUND)
+	SET(polycore_HDRS 
+		${polycore_HDRS}
+		Include/PolyCL.h
+	)
+ENDIF(OPENCL_FOUND)
 
 SET(CMAKE_DEBUG_POSTFIX "_d")
 

@@ -89,7 +89,10 @@
 #include "PolySceneSprite.h"
 #include "PolySceneEntityInstance.h"
 #include "PolyGlobals.h"
+
+#ifdef UseOpenCL
 #include "PolyCL.h"
+#endif
 
 #ifdef _WINDOWS
 #include "PolyWinCore.h"

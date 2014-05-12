@@ -35,14 +35,14 @@ THE SOFTWARE.
 	#define WIN32_LEAN_AND_MEAN
 
 	#pragma warning(disable:4251)
+	#ifdef UseOpenCL
+	#pragma warning(disable:4290)
+	#endif
 	#pragma warning(disable:4305)
 	#pragma warning(disable:4244)
 	#pragma warning(disable:4018)
 	#pragma warning(disable:4996)
 	#pragma warning(disable:4309)
-	#ifndef NULL
-	#define NULL 0
-	#endif
 	// Prevent windows.h includes from generating min/max macros that
 	// clash with the templates in <algorithm>
     #ifndef NOMINMAX
@@ -86,8 +86,6 @@ THE SOFTWARE.
 
 typedef double Number;
 
-#ifdef _WINDOWS
-#ifdef _MSC_VER
 #if _MSC_VER<=1600
 
 #include <cmath>	//cmath for "round / floor"
@@ -96,8 +94,6 @@ inline int round(Number x) {
 	return floor(x + 0.5); 
 }
 #endif 
-#endif
-#endif
 
 #define RANDOM_NUMBER ((Number)rand()/(Number)RAND_MAX)
 

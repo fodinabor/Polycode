@@ -27,9 +27,6 @@ THE SOFTWARE.
 #define __CL_ENABLE_EXCEPTIONS
 
 #ifdef _WINDOWS
-#ifdef _MSC_VER
-#pragma warning( disable : 4290 )
-#endif //_MSC_VER
 #include "CL/cl.hpp"
 #elif defined(__APPLE__) && defined(__MACH__)
 #include <OpenCL/cl.hpp>
