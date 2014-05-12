@@ -7,7 +7,11 @@ using namespace Polycode;
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+#if defined(_MSC_VER) && defined(_DEBUG)
+	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Polycode Example",false,true);
+#else 
 	PolycodeView *view = new PolycodeView(hInstance, nCmdShow, L"Polycode Example");
+#endif
 	HelloPolycodeApp *app = new HelloPolycodeApp(view);
 
 	MSG Msg;
