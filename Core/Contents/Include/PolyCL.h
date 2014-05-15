@@ -36,19 +36,35 @@ THE SOFTWARE.
 
 namespace Polycode {
 
+	/*
+	*Friendly OpenCL Wrapper - You may not use unless you know what you do! Needs to be templated: 1. param: the typename you want to get back, 2. param: the length of the array to get back
+	*/
 	template <typename OpType, long length>
 	class _PolyExport PolyCL : public PolyBase {
 	public:
 
+		/**
+		* Constructor.
+		* @param kernelSource A String containing the OpenCL C kernel source
+		* @param kernelName A String containing the name of the OpenCL C kernel
+		* @param arrays A vector of Arrays of any type which will be the parameters - the result should be stored in the last parameter, but is not stored in this array!
+		* @param size a vector of the sizes of the arrays stored in arrays
+		* @param result The OpenCL result Array is put in
+		*/
 		PolyCL(String kernelSource, String kernelName, std::vector< void* > arrays, std::vector< size_t > size, OpType *result) {
 			try {
-				init();
-				buildProgram(kernelSource);
-				createKernel(kernelName);
-				createBuffers(arrays, size);
-				executeKernel(result);
-				cleanBuffers();
-				success = true;
+				if (init()) {
+					buildProgram(kernelSource);
+					createKernel(kernelName);
+					createBuffers(arrays, size);
+					executeKernel(result);
+					cleanBuffers();
+					success = true;
+				}
+				else {
+					success = false;
+					return;
+				}
 			}
 			catch (cl::Error& err) {
 				Logger::log("Error: %s\n", err.what());
@@ -58,22 +74,47 @@ namespace Polycode {
 			}
 		}
 
+		/**
+		* Standard constructor. Sets success whether init succeeded or not.
+		*/
 		PolyCL() {
-			init();
+			if (init()) {
+				success = true;
+			}
+			else {
+				success = false;
+				return;
+			}
 		}
 
-		void init() {
+		/**
+		* Sets the platforms, devices and creates the Context. 
+		* @return if Platform and Device found true, otherwise false.
+		*/
+		bool init() {
 			result = new OpType[length];
 			if (!setPlatforms()) {
 				Logger::log("OpenCL disabled!\n");
-				exit(EXIT_FAILURE);
+				return false;
 			}
 			else {
-				setDevicesFromPlatform(platformsCL[0]);
-				createContext();
+				if (!setDevicesFromPlatform(platformsCL[0])) {
+					Logger::log("OpenCL disabled!\n");
+					return false;
+				}
+				else {
+					//setDevicesFromPlatform(platformsCL[0]);
+					createContext();
+					return true;
+				};
+				return true;
 			}
 		}
 
+		/**
+		* Sets the platforms.
+		* @return if Platform found true, otherwise false.
+		*/
 		bool setPlatforms() {
 			cl::Platform::get(&platformsCL);
 			if (platformsCL.size() == 0) {
@@ -85,6 +126,10 @@ namespace Polycode {
 			}
 		}
 
+		/**
+		* Sets devicesCL and defaultDeviceCL from a given platform. It first tries to use a GPU Device and if non has been found a CPU Device
+		* @param platform A cl::Platform to use a Device from
+		*/
 		bool setDevicesFromPlatform(const cl::Platform& platform) {
 
 			// Extract a vector of devices
@@ -95,25 +140,32 @@ namespace Polycode {
 					Logger::log("No OpenCL Device\n");
 					return false;
 				}
-				Logger::log("OpenCL Device Type: CPU\n");
+				Logger::log("OpenCL Device: [CPU] ");
 			}
 			else {
-				Logger::log("OpenCL Device Type: GPU\n");
+				Logger::log("OpenCL Device: [GPU] ");
 			}
 			defaultDeviceCL = devicesCL[0];
 			defaultDeviceCL.getInfo(CL_DEVICE_NAME, &deviceName);
 			defaultDeviceCL.getInfo(CL_DEVICE_VENDOR, &vendorName);
 
-			Logger::log("OpenCL Device found: %s %s\n", vendorName.c_str(), deviceName.c_str());
+			Logger::log("%s %s\n", vendorName.c_str(), deviceName.c_str());
 			
 			return true;
 		}
 
+		/**
+		* Creates a Context and a CommandQueue
+		*/
 		void createContext() {
 			contextCL = cl::Context(devicesCL);
 			queueCL = cl::CommandQueue(contextCL, defaultDeviceCL);
 		}
 
+		/**
+		* Builds the CL program from the given source
+		* @param kernelSource A String containing the OpenCL C kernel source 
+		*/
 		void buildProgram(String kernelSource) {
 			sourcesCL = cl::Program::Sources(1, std::make_pair(kernelSource.c_str(), kernelSource.length()));
 			programCL = cl::Program(contextCL, sourcesCL);
@@ -121,10 +173,19 @@ namespace Polycode {
 			programCL.build(devicesCL);
 		}
 
+		/**
+		* Creates a CL Kernel from the given name using the program created by buildProgram
+		* @param kernelName A String containing the name of the OpenCL C kernel
+		*/
 		void createKernel(String kernelName) {
 			kernelCL = cl::Kernel(programCL, kernelName.c_str());
 		}
 
+		/**
+		* Creates and allocates the needed buffers.
+		* @param arrays A vector of Arrays of any type which will be the parameters - the result should be stored in the last parameter, but is not stored in this array!
+		* @param size a vector of the sizes of the arrays stored in arrays
+		*/
 		void createBuffers(std::vector< void* > arrays, std::vector< size_t > size) {
 			for (int i = 0; i < arrays.size(); i++) {
 				buffer.push_back(cl::Buffer(contextCL, CL_MEM_READ_WRITE, size[i]));
@@ -134,9 +195,13 @@ namespace Polycode {
 			result_buffer = cl::Buffer(contextCL, CL_MEM_READ_WRITE, sizeof(OpType)*length);
 			kernelCL.setArg(arrays.size(), result_buffer);
 			
-			Logger::log("OpenCL Buffers: allocated and set\n");
+			//Logger::log("OpenCL Buffers: allocated and set\n");
 		}
 
+		/**
+		* Finally executes the kernel and sets result
+		* @param result The OpenCL result Array is put in
+		*/
 		void executeKernel(OpType* result) {
 			queueCL.enqueueNDRangeKernel(kernelCL, cl::NullRange, cl::NDRange(length), cl::NullRange, NULL, &event);
 			
@@ -144,33 +209,62 @@ namespace Polycode {
 			queueCL.enqueueReadBuffer(result_buffer, CL_TRUE, 0, sizeof(OpType)*length, (OpType*)result);
 			this->result = result;
 
-			Logger::log("Result available now\n");
+			//Logger::log("Result available now\n");
 		}
 
+		/**
+		* Cleanes the buffers.
+		*/
 		void cleanBuffers() {
 			buffer.~vector();
 		}
 
+		/**
+		* Sets the defaultDeviceCL to the given device.
+		* @param defaultDeviceCL A cl::Device to set the defaultDeviceCL from
+		*/
 		void setDefaultDevice(cl::Device defaultDeviceCL) {
 			this->defaultDeviceCL = defaultDeviceCL;
 		}
 
+		/**
+		* @return The default cl::Device
+		*/
 		cl::Device getDefaultDevice() {
 			return defaultDeviceCL;
 		}
 
+		/**
+		* @return The default device's name
+		*/
 		std::string getDefaultDeviceName() {
 			return deviceName;
 		}
+		
+		/**
+		* @return The default device's vendor name
+		*/
+		std::string getDefaultDeviceVendorName() {
+			return vendorName;
+		}
 
+		/**
+		* @return The platforms as cl::vector< cl::Platform >
+		*/
 		cl::vector< cl::Platform > getPlatforms() {
 			return platformsCL;
 		}
 
+		/**
+		* @return The result
+		*/
 		OpType* getResult() {
 			return result;
 		}
 
+		/**
+		* @return Whether success is true or false
+		*/
 		bool getSuccess() {
 			return success;
 		}
