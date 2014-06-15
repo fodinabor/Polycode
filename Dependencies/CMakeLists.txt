@@ -125,12 +125,12 @@ ENDIF(APPLE)
     SET(internal_ASSIMP ON)
 #ENDIF(ASSIMP_FOUND)
 
-FIND_PACKAGE(OpenCL 1.1 EXACT)
-IF(OPENCL_FOUND)
-    SET(internal_OPENCL ON)
-ELSE(OPENCL_FOUND)
-	SET(internal_OPENCL OFF)
-ENDIF(OPENCL_FOUND)
+#FIND_PACKAGE(OpenCL 1.1 EXACT)
+#IF(OPENCL_FOUND)
+#   SET(internal_OPENCL ON)
+#ELSE(OPENCL_FOUND)
+#	SET(internal_OPENCL OFF)
+#ENDIF(OPENCL_FOUND)
 
 
 OPTION(POLYCODE_DEPS_GLEXT "Download GL/glext.h header" ${internal_GLEXT})
@@ -147,7 +147,7 @@ OPTION(POLYCODE_DEPS_BOX2D "Download and build the Box2D package" ${internal_BOX
 OPTION(POLYCODE_DEPS_BULLET "Download and build the Bullet package" ${internal_BULLET})
 OPTION(POLYCODE_DEPS_ASSIMP "Download and build the Assimp package" ${internal_ASSIMP})
 
-OPTION(POLYCODE_DEPS_OPENCL "Copy Headers and Libaries, download C++ Wrapper for OpenCL" ${internal_OPENCL})
+OPTION(POLYCODE_DEPS_OPENCL "Copy Headers and Libaries, download C++ Wrapper for OpenCL" ${BUILD_OPENCL})
 
 IF(POLYCODE_DEPS_PNG)
     INCLUDE(ExternalPNG)
