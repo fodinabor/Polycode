@@ -39,7 +39,7 @@ PolycodeIDEApp::PolycodeIDEApp(PolycodeView *view) : EventDispatcher() {
 core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1, true);
 #endif
 	
-//	core->pauseOnLoseFocus = true;
+	core->pauseOnLoseFocus = true;
     
 	printf("DIR: %s\n", core->getDefaultWorkingDirectory().c_str());
 
@@ -55,8 +55,6 @@ core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1
 	runNextFrame = false;
 	
 	core->addEventListener(this, Core::EVENT_CORE_RESIZE);
-	core->addEventListener(this, Core::EVENT_LOST_FOCUS);
-	core->addEventListener(this, Core::EVENT_GAINED_FOCUS);
 			
 	globalClipboard = new PolycodeClipboard();
 	
@@ -828,12 +826,6 @@ void PolycodeIDEApp::handleEvent(Event *event) {
 
 	if(event->getDispatcher() == core) {
 		switch(event->getEventCode()) {
-			case Core::EVENT_LOST_FOCUS:
-				core->setFramerate(3);
-			break;		
-			case Core::EVENT_GAINED_FOCUS:
-				core->setFramerate(60);			
-			break;					
 			case Core::EVENT_CORE_RESIZE:
 				if(menuBar) {
 					frame->Resize(core->getXRes(), core->getYRes()-25);
