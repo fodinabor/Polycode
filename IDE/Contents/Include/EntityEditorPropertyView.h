@@ -60,6 +60,7 @@ class EntityEditorPropertyView : public UIElement {
         SoundSheet *soundSheet;
         SceneCurveSheet *curveSheet;
         CameraSheet *cameraSheet;
+		PluginsSheet *pluginsSheet;
         std::vector<EntityPropSheet*> propSheets;
         SceneMeshSheet *sceneMeshSheet;
     
