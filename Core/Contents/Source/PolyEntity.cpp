@@ -866,20 +866,20 @@ void Entity::setEntityProp(const String& propName, const bool& propVal) {
 	entityProps.push_back(entityProp);
 }
 
-void Entity::setEntityProp(const String& propName, std::vector<EntityProp*> propVal) {
-
-	for (int i = 0; i < entityProps.size(); i++) {
-		if (entityProps[i]->name == propName) {
-			entityProps[i]->arrayVal = propVal;
-			entityProps[i]->type = Prop::PROP_ARRAY;
-			return;
-		}
-	}
-
-	EntityProp* entityProp = new EntityProp(propName, Prop::PROP_ARRAY);
-	entityProp->arrayVal = propVal;
-	entityProps.push_back(entityProp);
-}
+//void Entity::setEntityProp(const String& propName, std::vector<EntityProp*> propVal) {
+//
+//	for (int i = 0; i < entityProps.size(); i++) {
+//		if (entityProps[i]->name == propName) {
+//			entityProps[i]->arrayVal = propVal;
+//			entityProps[i]->type = Prop::PROP_ARRAY;
+//			return;
+//		}
+//	}
+//
+//	EntityProp* entityProp = new EntityProp(propName, Prop::PROP_ARRAY);
+//	entityProp->arrayVal = propVal;
+//	entityProps.push_back(entityProp);
+//}
 
 void Entity::setEntityProp(EntityProp* prop){
 	for (int i = 0; i < entityProps.size(); i++) {
@@ -897,9 +897,6 @@ int	Entity::getEntityPropIntByName(const String& propName) const {
 		if (entityProps[i]->name == propName && entityProps[i]->type == Prop::PROP_INT) {
 			return entityProps[i]->intVal;
 		}
-		if (entityProps[i]->type == Prop::PROP_ARRAY) {
-			getEntityPropIntByName(propName);
-		}
 	}
 	return false;
 }
@@ -908,9 +905,6 @@ Number Entity::getEntityPropNumberByName(const String& propName) const {
 	for (int i = 0; i < entityProps.size(); i++) {
 		if (entityProps[i]->name == propName && entityProps[i]->type == Prop::PROP_NUMBER) {
 			return entityProps[i]->numberVal;
-		}
-		if (entityProps[i]->type == Prop::PROP_ARRAY) {
-			getEntityPropIntByName(propName);
 		}
 	}
 	return Number(NULL);
@@ -921,9 +915,6 @@ bool Entity::getEntityPropBoolByName(const String& propName) const {
 		if (entityProps[i]->name == propName && entityProps[i]->type == Prop::PROP_BOOL) {
 			return entityProps[i]->boolVal;
 		}
-		if (entityProps[i]->type == Prop::PROP_ARRAY) {
-			getEntityPropIntByName(propName);
-		}
 	}
 	return -1;
 }
@@ -933,25 +924,22 @@ String Entity::getEntityPropStringByName(const String& propName) const {
 		if (entityProps[i]->name == propName && entityProps[i]->type == Prop::PROP_STRING) {
 			return entityProps[i]->stringVal;
 		}
-		if (entityProps[i]->type == Prop::PROP_ARRAY) {
-			getEntityPropIntByName(propName);
-		}
 	}
 	return String("null");
 }
 
-std::vector<EntityProp*> Entity::getEntityPropArrayByName(const String& propName) const {
-	for (int i = 0; i < entityProps.size(); i++) {
-		if (entityProps[i]->name == propName && entityProps[i]->type == Prop::PROP_ARRAY) {
-			return entityProps[i]->arrayVal;
-		}
-		if (entityProps[i]->type == Prop::PROP_ARRAY) {
-			getEntityPropIntByName(propName);
-		}
-	}
-	std::vector<EntityProp*> retVector;
-	return retVector;
-}
+//std::vector<EntityProp*> Entity::getEntityPropArrayByName(const String& propName) const {
+//	for (int i = 0; i < entityProps.size(); i++) {
+//		if (entityProps[i]->name == propName && entityProps[i]->type == Prop::PROP_ARRAY) {
+//			return entityProps[i]->arrayVal;
+//		}
+//		if (entityProps[i]->type == Prop::PROP_ARRAY) {
+//			getEntityPropIntByName(propName);
+//		}
+//	}
+//	std::vector<EntityProp*> retVector;
+//	return retVector;
+//}
 
 bool Entity::isRequiredPlugin(const String& pluginName) const {
 	for (int i = 0; i < requiredPlugins.size(); i++) {
