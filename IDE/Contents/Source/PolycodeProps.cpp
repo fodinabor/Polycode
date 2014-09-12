@@ -2428,9 +2428,7 @@ EntityPropSheet::EntityPropSheet(Plugin* plugin) : PropSheet(plugin->getResource
 
 
 
-	//if (plugin->sheetEntry)
-		refreshProps();
-}
+	refreshProps();}
 
 void EntityPropSheet::applyPropActionData(PolycodeEditorPropActionData *data) {
 	if(!entity)
@@ -2586,7 +2584,7 @@ void EntityPropSheet::refreshProps() {
 		Prop* propEntry = props[i];
 		String caption = propEntry->name;
 
-		switch (propEntry->type) {
+			switch (propEntry->type) {
 		case PropProp::PROP_VECTOR3:
 			prop = new Vector3Prop(caption);
 			dynamic_cast<Vector3Prop*>(prop)->set(Vector3(entity->getEntityPropNumberByName(plugin + caption + "x"), entity->getEntityPropNumberByName(plugin + caption + "y"), entity->getEntityPropNumberByName(plugin + caption + "z")));
@@ -2596,7 +2594,15 @@ void EntityPropSheet::refreshProps() {
 			dynamic_cast<Vector2Prop*>(prop)->set(Vector2(entity->getEntityPropNumberByName(plugin + caption + "x"), entity->getEntityPropNumberByName(plugin + caption + "y")));
 			break;
 		case PropProp::PROP_SLIDER:
-			prop = new SliderProp(caption, entity->getEntityPropNumberByName(plugin + caption + "min"), entity->getEntityPropNumberByName(plugin + caption + "max"));
+			Number min, max;
+			for (int s = 0; s < propEntry->children.size(); s++){
+				if (propEntry->children[s]->name == "min"){
+					min = propEntry->children[s]->value;
+				} else if (propEntry->children[s]->name == "max"){
+					max = propEntry->children[s]->value;
+				}
+			}
+			prop = new SliderProp(caption, min, max);
 			dynamic_cast<SliderProp*>(prop)->set(entity->getEntityPropNumberByName(plugin + caption));
 			break;
 			//case PropProp::PROP_BUTTON:
@@ -2693,6 +2699,7 @@ void EntityPropSheet::refreshProps() {
 		addProp(prop);
 		prop->Resize(getWidth(), prop->getHeight());
 	}
+	
 
 	if(lastNumProps != entity->entityProps.size()) {
 		dispatchEvent(new Event(), Event::COMPLETE_EVENT);

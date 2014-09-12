@@ -44,8 +44,7 @@ namespace Polycode {
 			bool blocked;
 	};
 
-	class _PolyExport EntityProp : public PolyBase {
-	public:
+	class _PolyExport EntityProp : public PolyBase {	public:
 		EntityProp(const String& name, const unsigned int& type = EntityProp::PROP_STRING);
 
 		int type;

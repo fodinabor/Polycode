@@ -52,22 +52,18 @@ Plugin* Plugin::loadPluginFromEntry(ObjectEntry* entry){
 	if ((*entry)["fileext"])
 		this->ext = (*entry)["fileext"]->stringVal;
 	
-	//if ((*entry)["sheet"] && (*(*entry)["sheet"])["props"])
-	//	this->sheetEntry = (*entry)["sheet"];
-
 	if ((*entry)["type"])
 		this->pluginType = (*entry)["type"]->intVal;
 	
 	if ((*entry)["sheet"]){
 		ObjectEntry* sheetEntry = (*entry)["sheet"];
 		if ((*sheetEntry)["props"]){
-			ObjectEntry* propsEntry = (*sheetEntry)["props"];
-			if (propsEntry) {
-				for (int k = 0; k < propsEntry->children.size(); k++) {
-					ObjectEntry* propEntry = propsEntry->children[k];
+			ObjectEntry* props = (*sheetEntry)["props"];
+			if (props) {
+				for (int k = 0; k < props->children.size(); k++) {
+					ObjectEntry* propEntry = props->children[k];
 					if (!propEntry || propEntry->name != "prop")
 						continue;
-
 					Prop *prop = new Prop(propEntry);
 					this->setProp(prop);
 				}
@@ -80,10 +76,6 @@ Plugin* Plugin::loadPluginFromEntry(ObjectEntry* entry){
 
 unsigned int Plugin::getNumProps() const {
 	return props.size();
-}
-
-void Plugin::addProp(Prop *prop) {
-	props.push_back(prop);
 }
 
 void Plugin::setProp(Prop *prop) {
@@ -135,13 +127,11 @@ Prop::~Prop(){}
 Prop* Prop::loadPropFromEntry(ObjectEntry* entry){
 	if (!entry->readInt("type", &this->type))
 		return NULL;
-
 	if (!(*entry)["name"])
 		return NULL;
 	this->name = (*entry)["name"]->stringVal;
 
-	if (type == Prop::PROP_COMBO){
-		for (int i = 0; i < entry->children.size(); i++) {
+	if (type == Prop::PROP_COMBO){		for (int i = 0; i < entry->children.size(); i++) {
 			if (entry->children[i]->name == "prop") {
 				Prop* newProp = new Prop((*entry->children[i])["name"]->stringVal, Prop::PROP_COMBO);
 				newProp->value = (*entry->children[i])["value"]->intVal;

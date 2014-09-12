@@ -2529,11 +2529,7 @@ void PolycodeEntityEditor::savePropsToEntry(ObjectEntry *entry, std::vector<Enti
 			case EntityProp::PROP_STRING:
 				prop->addChild("value", props[i]->stringVal);
 				break;
-				//case Prop::PROP_ARRAY:
-				//	savePropsToEntry(prop, props[i]->arrayVal, props[i]->name);
-				//	break;
-			case EntityProp::PROP_BOOL:
-				prop->addChild("value", props[i]->boolVal);
+			case EntityProp::PROP_BOOL:				prop->addChild("value", props[i]->boolVal);
 				break;
 			case EntityProp::PROP_INT:
 				prop->addChild("value", props[i]->intVal);
