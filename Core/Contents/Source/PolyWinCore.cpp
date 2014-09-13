@@ -1149,7 +1149,7 @@ std::vector<String> Win32Core::openFilePicker(std::vector<CoreFileExtension> ext
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir=NULL;
 
-	if(allowMultiple) {
+	if(!allowMultiple) {
 		ofn.Flags = OFN_PATHMUSTEXIST|OFN_FILEMUSTEXIST|OFN_ALLOWMULTISELECT|OFN_EXPLORER;
 	} else {
 		ofn.Flags = OFN_PATHMUSTEXIST|OFN_FILEMUSTEXIST|OFN_EXPLORER;
@@ -1159,9 +1159,7 @@ std::vector<String> Win32Core::openFilePicker(std::vector<CoreFileExtension> ext
 
 	if(GetOpenFileName(&ofn)) {
 		if(allowMultiple) {
-			String path = fBuffer;
-
-			std::string buf;
+			String path = fBuffer;			std::string buf;
 			for (int i = ofn.nFileOffset; i < sizeof( fBuffer ); i++)
 			{
 				if (fBuffer[i] != NULL)
