@@ -36,7 +36,6 @@ namespace Polycode {
 
 		Prop *loadPropFromEntry(ObjectEntry* entry);
 		
-
 		int type;
 		String name;
 		int value;
@@ -88,7 +87,7 @@ namespace Polycode {
 			static const unsigned int PLUGIN_ENTITY = 0;
 
 			String ext;
-			//ObjectEntry *sheetEntry;
+			String author;
 
 		protected:
 			std::vector<Prop*> props;
