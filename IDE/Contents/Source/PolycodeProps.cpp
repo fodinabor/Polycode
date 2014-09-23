@@ -4587,18 +4587,20 @@ void SoundSheet::handleEvent(Event *event) {
 }
 
 void SoundSheet::setSound(SceneSound *sound) {
-    this->sound = sound;
+	this->sound = sound;
 
-	if(sound) {
-		enabled = true;	
+	if (sound) {
+		enabled = true;
 
-        soundProp->set(sound->getSound()->getFileName());
-        referenceDistance->set(sound->getSound()->getReferenceDistance());
-        maxDistance->set(sound->getSound()->getMaxDistance());
-        volume->set(sound->getSound()->getVolume());
-        pitch->set(sound->getSound()->getPitch());
-        soundProp->previewSound->setPitch(sound->getSound()->getPitch());
+		soundProp->set(sound->getSound()->getFileName());
+		referenceDistance->set(sound->getSound()->getReferenceDistance());
+		maxDistance->set(sound->getSound()->getMaxDistance());
+		volume->set(sound->getSound()->getVolume());
+		pitch->set(sound->getSound()->getPitch());
+		soundProp->previewSound->setPitch(sound->getSound()->getPitch());
 
 	} else {
 		enabled = false;
 	}
+
+}
