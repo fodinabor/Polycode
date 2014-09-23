@@ -573,15 +573,6 @@ Entity *SceneEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry, Entit
 			}
 		}
 	} else {
-		//ObjectEntry *plugins = (*entry)["requiredPlugins"];
-		//if (plugins) {
-		//	for (int p = 0; p < plugins->children.size(); p++) {
-		//		if (plugins->children[p]->name == "requiredPlugin") {
-		//			String requiredPlugin = (*plugins->children[p])["name"]->stringVal;
-		//			entity->addPluginByName(requiredPlugin);
-		//		}
-		//	}
-		//}
 		ObjectEntry *plugins = (*entry)["plugins"];
 		if (plugins){
 			for (int p = 0; p < plugins->children.size(); p++) {
@@ -592,9 +583,11 @@ Entity *SceneEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry, Entit
 						entity->addPluginByName(pluginName);
 
 						ObjectEntry *props = (*plugin)["props"];
-						std::vector<EntityProp*> entProps = parseObjectEntryIntoProps(props, pluginName);
-						for (int i = 0; i < entProps.size(); i++){
-							entity->entityProps.push_back(entProps[i]);
+						if (props){
+							std::vector<EntityProp*> entProps = parseObjectEntryIntoProps(props, pluginName);
+							for (int i = 0; i < entProps.size(); i++){
+								entity->setEntityProp(entProps[i]);
+							}
 						}
 					}
 				}

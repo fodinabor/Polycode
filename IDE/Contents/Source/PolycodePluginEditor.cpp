@@ -122,6 +122,7 @@ PluginEditorPane::PluginEditorPane(ResourcePool *resourcePool) : UIElement() {
 	propList->addPropSheet(propsSheet);
 
 	propList->updateProps();
+	propList->Resize(propList->getWidth(), propList->getHeight());
 
 	enabled = false;
 }
@@ -201,7 +202,7 @@ void PluginEditorPane::handleEvent(Event *event) {
 }
 
 void PluginEditorPane::setPlugin(Plugin *plugin) {
-for (int p = propsSheet->props.size(); p > 0; p--){
+	for (int p = propsSheet->props.size(); p > 0; p--){
 		propsSheet->removeProp(propsSheet->props[p - 1]);
 	}
 	changingPlugin = true;
@@ -242,6 +243,7 @@ for (int p = propsSheet->props.size(); p > 0; p--){
 	for (int p = 0; p < propsSheet->props.size(); p++){
 		propsSheet->props[p]->propContents->setPositionX(padding);
 	}
+	propList->Resize(propList->getWidth(), propList->getHeight());
 
 	enabled = true;
 

@@ -868,7 +868,7 @@ void Entity::setEntityProp(const String& propName, const bool& propVal) {
 
 void Entity::setEntityProp(EntityProp* prop){
 	for (int i = 0; i < entityProps.size(); i++) {
-		if (entityProps[i] == prop) {
+		if (entityProps[i]->name == prop->name) {
 			entityProps[i] = prop;
 			return;
 		}
@@ -881,14 +881,18 @@ int	Entity::getEntityPropIntByName(const String& propName) const {
 	for (int i = 0; i < entityProps.size(); i++) {
 		if (entityProps[i]->name == propName && entityProps[i]->type == EntityProp::PROP_INT) {
 			return entityProps[i]->intVal;
+		} else if (entityProps[i]->name == propName && entityProps[i]->type == EntityProp::PROP_NUMBER){
+			return entityProps[i]->numberVal;
 		}
 	}
-	return false;
+	return 0;
 }
 
 Number Entity::getEntityPropNumberByName(const String& propName) const {
 	for (int i = 0; i < entityProps.size(); i++) {
-		if (entityProps[i]->name == propName && entityProps[i]->type == EntityProp::PROP_NUMBER) {
+		if (entityProps[i]->name == propName && entityProps[i]->type == EntityProp::PROP_INT) {
+			return entityProps[i]->intVal;
+		} else if (entityProps[i]->name == propName && entityProps[i]->type == EntityProp::PROP_NUMBER){
 			return entityProps[i]->numberVal;
 		}
 	}
@@ -1369,6 +1373,9 @@ void Entity::addPluginByName(const String& pluginName, ResourcePool *resourcePoo
 		}
 
 		requiredPlugins.push_back(plugin);
+		for (int p = 0; p < plugin->getNumProps(); p++){
+			setEntityProp(plugin->getResourceName() + plugin->getProps()[p]->name, 0);
+		}
 	}
 }
 

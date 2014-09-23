@@ -1925,15 +1925,15 @@ PropEditProp::PropEditProp(PropProp *newProp) : PropProp(newProp->getPropName(),
 	typeChooser->setPosition(70, 25);
 
 	currentValue = newProp->propType;
+	setHeight(65);
 
 	if (currentValue != PropProp::PROP_COMBO){
 		comboEditProp = new ComboPropEditProp(new ComboProp(nameInput->getText()));
 		comboEditProp->enabled = false;
 		comboEditProp->visible = false;
-		setHeight(65);
 	} else {
 		comboEditProp = new ComboPropEditProp(((ComboProp*)newProp));
-		setHeight(65 + comboEditProp->getHeight());
+		setHeight(80 + comboEditProp->getHeight());
 	}
 	comboEditProp->addEventListener(this, Event::CHANGE_EVENT);
 	propContents->addChild(comboEditProp);
@@ -1943,10 +1943,9 @@ PropEditProp::PropEditProp(PropProp *newProp) : PropProp(newProp->getPropName(),
 		sliderEditProp = new SliderEditProp(new SliderProp(nameInput->getText(), 0, 0));
 		sliderEditProp->enabled = false;
 		sliderEditProp->visible = false;
-		setHeight(65);
 	} else {
 		sliderEditProp = new SliderEditProp(((SliderProp*)newProp));
-		setHeight(65 + sliderEditProp->getHeight());
+		setHeight(80 + sliderEditProp->getHeight());
 	}
 	sliderEditProp->addEventListener(this, Event::CHANGE_EVENT);
 	propContents->addChild(sliderEditProp);
@@ -2025,7 +2024,7 @@ void PropEditProp::set(PropProp *newProp){
 	currentProp = newProp;
 	nameInput->setText(newProp->getPropName());
 	typeChooser->setSelectedIndex(newProp->propType);
-	setHeight(80);
+	setHeight(65);
 	if (newProp->propType != PropProp::PROP_COMBO){
 		comboEditProp->set(new ComboProp(nameInput->getText()));
 	} else {

@@ -18,6 +18,26 @@
                 <prop type="4" name="Friction" />
                 <prop type="4" name="Restitution" />
                 <prop type="14" name="Comp Children?" />
+                <prop type="0" name="Group" />
+            </props>
+        </sheet>
+    </plugin>
+	<plugin name="Collision3D" author="fodinabor" polystring:fileext="" type="0">
+        <sheet>
+            <props>
+                <prop type="13" name="Shape">
+                    <prop name="Box" value="0" />
+                    <prop name="Terrain" value="1" />
+                    <prop name="Sphere" value="2" />
+                    <prop name="Mesh" value="3" />
+                    <prop name="Char Controller" value="4" />
+                    <prop name="Capsule" value="5" />
+                    <prop name="Plane" value="6" />
+                    <prop name="Cone" value="7" />
+                    <prop name="Cylinder" value="8" />
+                </prop>
+                <prop type="4" name="Group" />
+                <prop type="14" name="Comp Children?" />
             </props>
         </sheet>
     </plugin>
@@ -38,7 +58,7 @@
                 <prop type="4" name="Restitution" />
                 <prop type="14" name="Sensor?" />
                 <prop type="14" name="Fixed Rot?" />
-                <prop type="4" name="Group Index" />
+                <prop type="4" name="Group" />
             </props>
         </sheet>
     </plugin>

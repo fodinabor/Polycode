@@ -87,7 +87,7 @@ CollisionEntity::CollisionEntity(Entity *entity){
 	this->entity = entity;
 	shape = NULL;
 
-	this->type = entity->getEntityPropIntByName("Physics3DShape");
+	this->type = entity->getEntityPropIntByName("Collision3DShape");
 	enabled = true;
 	lastPosition = entity->getPosition();
 
@@ -98,7 +98,7 @@ CollisionEntity::CollisionEntity(Entity *entity){
 	collisionObject = new btCollisionObject();
 	collisionObject->getWorldTransform().setBasis(basisA);
 
-	if (entity->getEntityPropBoolByName("Physics3DComp Children?")) {
+	if (entity->getEntityPropBoolByName("Collision3DComp Children?")) {
 		btCompoundShape* compoundShape = new btCompoundShape();
 
 		for (int i = 0; i < entity->getNumChildren(); i++) {
