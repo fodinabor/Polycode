@@ -235,7 +235,7 @@ core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1
 	
 	applyFinalConfig();
     
-	updater = new HTTPFetcher("http://www.polycode.org/updater.xml");
+	updater = new HTTPFetcher("http://127.0.0.1/updater.xml");
 	updater->addEventListener(this, HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED);
 	updater->receiveHTTPData();
 
@@ -714,7 +714,7 @@ void PolycodeIDEApp::openFile(OSFileEntry file) {
 
 void PolycodeIDEApp::checkUpdates(){
 	int newMaj, newMin, newFix, maj, min, fix;
-	char newState[3], state[3];
+	char newState[3], state[6];
 	
 	Object updateObj;
 	updateObj.loadFromXMLString(updater->getData());
