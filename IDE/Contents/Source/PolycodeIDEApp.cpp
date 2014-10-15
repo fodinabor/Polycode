@@ -235,6 +235,10 @@ core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1
 	
 	applyFinalConfig();
     
+	updater = new HTTPFetcher("http://www.polycode.org/updater.xml");
+	updater->addEventListener(this, HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED);
+	updater->receiveHTTPData();
+
     core->updateAndRender();
     frame->Resize(core->getXRes(), core->getYRes());
 
@@ -708,6 +712,28 @@ void PolycodeIDEApp::openFile(OSFileEntry file) {
 	}
 }
 
+void PolycodeIDEApp::checkUpdates(){
+	int newMaj, newMin, newFix, maj, min, fix;
+	char newState[3], state[3];
+	
+	Object updateObj;
+	updateObj.loadFromXMLString(updater->getData());
+	if (updateObj.root["version"]){
+		String newVersion = updateObj.root["version"]->stringVal;
+		String curVersion = String(POLYCODE_VERSION_STRING);
+		sscanf(newVersion.c_str(), "%d.%d.%d%s", &newMaj, &newMin, &newFix, &newState);
+		sscanf(curVersion.c_str(), "%d.%d.%d%s", &maj, &min, &fix, &state);
+		if (newMaj > maj || newMin > min || newFix > fix || (strstr(state, "a") != NULL && (strstr(newState, "b")!=NULL || strstr(newState, "r")!=NULL) || (strstr(state, "b")!=NULL && strstr(newState, "r")!=NULL))) {
+			if (updateObj.root["url"]) {
+				Services()->getConfig()->setStringValue("Polycode", "UpdateURL", updateObj.root["url"]->stringVal);
+				Services()->getConfig()->setStringValue("Polycode", "UpdateVersion", newVersion);
+				UpdaterWindow *update = new UpdaterWindow();
+				frame->showModal(update);
+			}
+		}
+	}
+}
+
 void PolycodeIDEApp::handleEvent(Event *event) {
 
 	if(event->getDispatcher() == frame->assetImporterWindow) {
@@ -1142,6 +1168,12 @@ void PolycodeIDEApp::handleEvent(Event *event) {
 						openFile(selectedData->fileEntry);
 				}
 			}
+		}
+	}
+
+	if (event->getDispatcher() == updater){
+		if (event->getEventCode() == HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED){
+			checkUpdates();
 		}
 	}
 }
