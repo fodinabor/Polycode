@@ -28,17 +28,19 @@ THE SOFTWARE.
 
 #define HTTP_VERSION 			"HTTP/1.1"
 #define DEFAULT_USER_AGENT		"Polycode HTTP Fetcher/1.0"
-#define DEFAULT_PAGE_BUF_SIZE 	1024 * 200	/* 200K should hold most things */
+#define DEFAULT_PAGE_BUF_SIZE 	2048
 
 namespace Polycode {
 	
 	class HTTPFetcherEvent : public Event {
 	public:
-		HTTPFetcherEvent() { data = String(); }
+		HTTPFetcherEvent() { contentSize = 0; errorCode = 0; data = NULL; }
 		~HTTPFetcherEvent(){}
 
-		String data;
+		char* data;
 		int errorCode;
+
+		unsigned long contentSize;
 		
 		static const int EVENTBASE_SOCKETEVENT = 0x500;
 		static const int EVENT_HTTP_ERROR = EVENTBASE_SOCKETEVENT + 2;
@@ -66,7 +68,7 @@ namespace Polycode {
 		String host;
 		String protocol;
 
-		void createSocket();
+		bool createSocket();
 		void updateThread();
 	};
 }

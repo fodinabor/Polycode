@@ -68,7 +68,8 @@ HTTPFetcher::HTTPFetcher(String address) : Threaded() {
 		}
 	}
 
-	createSocket();
+	if (!createSocket())
+		return;
 
 	threadRunning = true;
 	CoreServices::getInstance()->getCore()->createThread(this);
@@ -82,7 +83,7 @@ HTTPFetcher::~HTTPFetcher(){
 #endif
 }
 
-void HTTPFetcher::createSocket(){
+bool HTTPFetcher::createSocket(){
 	struct sockaddr_in server;
 
 	addrinfo *result = NULL;
@@ -96,6 +97,7 @@ void HTTPFetcher::createSocket(){
 	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		Logger::log("HTTP Fetcher: Could not create socket: %s\n", strerror(errno));
 #endif
+		return false;
 	}
 
 	memset(&hints, 0, sizeof(hints));
@@ -109,7 +111,7 @@ void HTTPFetcher::createSocket(){
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 		Logger::log("HTTP Fetcher: Address resolve error: %s\n", strerror(errno));
 #endif
-		return;
+		return false;
 	}
 
 	server.sin_addr = ((sockaddr_in*)result->ai_addr)->sin_addr;
@@ -123,8 +125,9 @@ void HTTPFetcher::createSocket(){
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 		Logger::log("HTTP Fetcher: connect error code: %s\n", strerror(errno));
 #endif
-		return;
+		return false;
 	}
+	return true;
 }
 
 void HTTPFetcher::updateThread(){
@@ -152,15 +155,16 @@ void HTTPFetcher::updateThread(){
 	}
 
 	char *server_reply = (char*)malloc(DEFAULT_PAGE_BUF_SIZE);
-	unsigned long recv_size;
+	char *rec = server_reply;
+	unsigned long recv_size = 0, totalRec = 0;
 	do {
 		//Receive a reply from the server
 #if PLATFORM == PLATFORM_WINDOWS
-		if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == SOCKET_ERROR) {
+		if ((recv_size = recv(s, rec, DEFAULT_PAGE_BUF_SIZE, 0)) == SOCKET_ERROR) {
 			Logger::log("HTTP Fetcher: recv failed: %d\n", WSAGetLastError());
 			event->errorCode = WSAGetLastError();
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
-		if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == -1) {
+		if ((recv_size = recv(s, rec, DEFAULT_PAGE_BUF_SIZE, 0)) == -1) {
 			Logger::log("HTTP Fetcher: recv failed: %s\n", strerror(errno));
 			event->errorCode = strerror(errno);
 #endif
@@ -169,17 +173,21 @@ void HTTPFetcher::updateThread(){
 			return;
 		}
 
-		//Add a NULL terminating character to make it a proper string before using it
-		server_reply[recv_size] = '\0';
-		event->data += String(server_reply);
+		
+		totalRec += recv_size;
+		server_reply = (char*)realloc(server_reply, totalRec + DEFAULT_PAGE_BUF_SIZE);
+		rec = server_reply+totalRec;
 	} while (recv_size != 0);
+
+	server_reply[totalRec] = '\0';
+	event->data = server_reply;
 
 	if (event->data == ""){
 		createSocket();
 		return;
 	}
 
-	char *charIndex = strstr(const_cast<char*>(event->data.c_str()), "HTTP/");
+	char *charIndex = strstr(event->data, "HTTP/");
     if(charIndex == NULL){
 		killThread();
 		return;
@@ -189,15 +197,17 @@ void HTTPFetcher::updateThread(){
 		killThread();
 		return;
 	}
-	charIndex = strstr(const_cast<char*>(event->data.c_str()), "Content-Length:");
+	charIndex = strstr(event->data, "Content-Length:");
 	if (charIndex == NULL)
-		charIndex = strstr(const_cast<char*>(event->data.c_str()), "Content-length:");
+		charIndex = strstr(event->data, "Content-length:");
 	if (sscanf(charIndex + strlen("content-length: "), "%d", &i) != 1) {
 		killThread();
 		return;
 	}
 
-	charIndex = strstr(const_cast<char*>(event->data.c_str()), "\r\n\r\n") + strlen("\r\n\r\n");
+	event->contentSize = min(i, totalRec);
+
+	charIndex = strstr(event->data, "\r\n\r\n") + strlen("\r\n\r\n");
 
     event->data = charIndex;
 	bodyReturn = event->data;
