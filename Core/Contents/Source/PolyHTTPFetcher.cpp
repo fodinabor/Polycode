@@ -22,15 +22,21 @@ THE SOFTWARE.
 
 #include "PolyHTTPFetcher.h"
 #include "PolyLogger.h"
+#include "PolyCoreServices.h"
+#include "PolyCore.h"
 
 using namespace Polycode;
 
-HTTPFetcher::HTTPFetcher(String address) : EventDispatcher() {
+HTTPFetcher::HTTPFetcher(String address) : Threaded() {
+	core = CoreServices::getInstance()->getCore();
+	eventMutex = core->getEventMutex();
+
 	this->address = address;
 	int protocolIndex = address.find_first_of("://");
     if (protocolIndex != 0){
 		protocolIndex += strlen("://");
-		pathIndex = address.find_first_of("/", protocolIndex);
+		int pathIndex = address.find_first_of("/", protocolIndex);
+		String path = address.substr(pathIndex+1, address.length());
 		
 		if (pathIndex != 0){
 			host = address.substr(protocolIndex, pathIndex - protocolIndex);
@@ -38,7 +44,8 @@ HTTPFetcher::HTTPFetcher(String address) : EventDispatcher() {
 			host = address.substr(protocolIndex, address.length());
 		}
 	} else {
-		pathIndex = address.find_first_of("/");
+		int pathIndex = address.find_first_of("/");
+		String path = address.substr(pathIndex+1, address.length());
 
 		if (pathIndex != 0){
 			host = address.substr(0, pathIndex);
@@ -89,6 +96,8 @@ HTTPFetcher::HTTPFetcher(String address) : EventDispatcher() {
 #endif
 		return;
 	}
+
+	CoreServices::getInstance()->getCore()->createThread(this);
 }
 
 HTTPFetcher::~HTTPFetcher(){
@@ -99,11 +108,11 @@ HTTPFetcher::~HTTPFetcher(){
 #endif
 }
 
-bool HTTPFetcher::receiveHTTPData(){
+void HTTPFetcher::updateThread(){
 	//Send some data
 	String request;
-	if (pathIndex) {
-		request = "GET " + address.substr(pathIndex, address.length()) + " " + String(HTTP_VERSION) + "\r\nHost: " + host + "\r\nUser-Agent: " + DEFAULT_USER_AGENT + "\r\nConnection: close\r\n\r\n";
+	if (path != "") {
+		request = "GET /" + path + " " + String(HTTP_VERSION) + "\r\nHost: " + host + "\r\nUser-Agent: " + DEFAULT_USER_AGENT + "\r\nConnection: close\r\n\r\n";
 	} else {
 		request = "GET / " + String(HTTP_VERSION) + "\r\nHost: " + host + "\r\nUser-Agent: " + DEFAULT_USER_AGENT + "\r\nConnection: close\r\n\r\n";
 	}
@@ -113,47 +122,56 @@ bool HTTPFetcher::receiveHTTPData(){
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
         Logger::log("HTTP Fetcher: Send failed: %s\n",strerror(errno));
 #endif
-		return false;
+		return;
 	}
 
-	char server_reply[DEFAULT_PAGE_BUF_SIZE];
+	HTTPFetcherEvent *event = new HTTPFetcherEvent();
+
+	char *server_reply = (char*)malloc(DEFAULT_PAGE_BUF_SIZE);
 	unsigned long recv_size;
-	//Receive a reply from the server
+	do {
+		//Receive a reply from the server
 #if PLATFORM == PLATFORM_WINDOWS
-    if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == SOCKET_ERROR) {
-        Logger::log("HTTP Fetcher: recv failed: %d\n", WSAGetLastError());
+		if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == SOCKET_ERROR) {
+			Logger::log("HTTP Fetcher: recv failed: %d\n", WSAGetLastError());
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
-    if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == -1) {
-        Logger::log("HTTP Fetcher: recv failed: %s\n", strerror(errno));
+		if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == -1) {
+			Logger::log("HTTP Fetcher: recv failed: %s\n", strerror(errno));
 #endif
-		return false;
-	}
+			return;
+		}
 
-	//Add a NULL terminating character to make it a proper string before printing
-	server_reply[recv_size] = '\0';
+		//Add a NULL terminating character to make it a proper string before using it
+		server_reply[recv_size] = '\0';
+		event->data += String(server_reply);
+	} while (recv_size != 0);
 
-    HTTPFetcherEvent *event = new HTTPFetcherEvent();
-    char *charIndex = strstr(server_reply, "HTTP/");
+	char *charIndex = strstr(const_cast<char*>(event->data.c_str()), "HTTP/");
     if(charIndex == NULL){
-        return false;
+        return;
     }
     int i;
 	if (sscanf(charIndex, "HTTP/1.1 %d", &i) != 1 || i < 200 || i>299) {
-		return false;
+		return;
 	}
-    charIndex = strstr(server_reply, "Content-Length:");
+	charIndex = strstr(const_cast<char*>(event->data.c_str()), "Content-Length:");
 	if (charIndex == NULL)
-        charIndex = strstr(server_reply, "Content-length:");
+		charIndex = strstr(const_cast<char*>(event->data.c_str()), "Content-length:");
 	if (sscanf(charIndex + strlen("content-length: "), "%d", &i) != 1) {
-		return false;
+		return;
 	}
 
-    charIndex = strstr(server_reply, "\r\n\r\n") + strlen("\r\n\r\n");
+	charIndex = strstr(const_cast<char*>(event->data.c_str()), "\r\n\r\n") + strlen("\r\n\r\n");
 
     event->data = charIndex;
-	bodyReturn = String(charIndex);
+	bodyReturn = event->data;
     dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED);
-	return true;
+	killThread();
+}
+
+void HTTPFetcher::fetchFile(String pathToFile){
+	path = pathToFile;
+	CoreServices::getInstance()->getCore()->createThread(this);
 }
 
 String HTTPFetcher::getData(){

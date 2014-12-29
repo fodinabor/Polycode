@@ -155,7 +155,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					globalApp->openDocs(); 
 					break;
 				case ID_HELP_LOOKFORUPDATES:
-					globalApp->checkUpdates();
+					globalApp->updater->fetchFile("updater.xml");
 					break;
 			}
 		break;

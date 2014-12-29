@@ -73,7 +73,7 @@ public:
 	
 	void stopProject();
 
-	void checkUpdates();
+	void checkUpdates(const String updateFile);
 	
 	// menu commands
 	void renameFile();
@@ -122,7 +122,8 @@ public:
 	const static int EVENT_SHOW_MENU = 1;
 	
 	Core *core;
-	
+	HTTPFetcher *updater;
+
 	void saveFiles(std::vector<PolycodeEditor*> editors);
 	void closeFiles(std::vector<PolycodeEditor*> editors, String saveMsg="");
 	bool filesHaveChanges(std::vector<PolycodeEditor*> editors);
@@ -154,6 +155,4 @@ private:
 	
 	// used in saving/closing files via popup dialog prompts
 	std::vector<PolycodeEditor*> tempEditorStore;
-
-	HTTPFetcher *updater;
 };

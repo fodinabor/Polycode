@@ -34,40 +34,46 @@ THE SOFTWARE.
     #include <errno.h>
 #endif
 #include "PolyGlobals.h"
-#include "PolyEvent.h"
-#include "PolyEventDispatcher.h"
+#include "PolyThreaded.h"
 
 #define HTTP_VERSION 			"HTTP/1.0"
 #define DEFAULT_USER_AGENT		"Polycode HTTP Fetcher/1.0"
 #define DEFAULT_PAGE_BUF_SIZE 	1024 * 200	/* 200K should hold most things */
 
 namespace Polycode {
+	
 	class HTTPFetcherEvent : public Event {
 	public:
-		HTTPFetcherEvent() { data = (char*)malloc(DEFAULT_PAGE_BUF_SIZE); memset(data, 0, DEFAULT_PAGE_BUF_SIZE); }
+		HTTPFetcherEvent() { data = String(); }
 		~HTTPFetcherEvent(){}
 
-		char *data;
+		String data;
 		
 		static const int EVENTBASE_SOCKETEVENT = 0x500;
 		static const int EVENT_HTTP_ERROR = EVENTBASE_SOCKETEVENT + 2;
 		static const int EVENT_HTTP_DATA_RECEIVED = EVENTBASE_SOCKETEVENT + 3;
 	};
 
-	class HTTPFetcher : public EventDispatcher{
+	class HTTPFetcher : public Threaded {
 	public:
 		HTTPFetcher(String address);
 		~HTTPFetcher();
 
-		bool receiveHTTPData();
-
 		String getData();
+
+		/*
+		* Fetches a file given in the param
+		* @param pathToFile Path String to the new file to fetch from the same host. Without leading "/"
+		*/
+		void fetchFile(String pathToFile);
 
 	private:
         int s;
 		String address;
 		String bodyReturn;
-		int pathIndex;
+		String path;
 		String host;
+
+		void updateThread();
 	};
 }
