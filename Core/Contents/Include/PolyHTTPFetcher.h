@@ -22,21 +22,11 @@ THE SOFTWARE.
 
 #pragma once
 #include <string.h>
-#ifdef _WINDOWS
-	#include <winsock2.h>
-	#include <Ws2tcpip.h>
-#else
-	#include <sys/socket.h>
-	#include <sys/types.h>
-	#include <netinet/in.h>
-	#include <netdb.h>
-    #include <arpa/inet.h>
-    #include <errno.h>
-#endif
+
 #include "PolyGlobals.h"
 #include "PolyThreaded.h"
 
-#define HTTP_VERSION 			"HTTP/1.0"
+#define HTTP_VERSION 			"HTTP/1.1"
 #define DEFAULT_USER_AGENT		"Polycode HTTP Fetcher/1.0"
 #define DEFAULT_PAGE_BUF_SIZE 	1024 * 200	/* 200K should hold most things */
 
@@ -48,6 +38,7 @@ namespace Polycode {
 		~HTTPFetcherEvent(){}
 
 		String data;
+		int errorCode;
 		
 		static const int EVENTBASE_SOCKETEVENT = 0x500;
 		static const int EVENT_HTTP_ERROR = EVENTBASE_SOCKETEVENT + 2;
@@ -73,7 +64,9 @@ namespace Polycode {
 		String bodyReturn;
 		String path;
 		String host;
+		String protocol;
 
+		void createSocket();
 		void updateThread();
 	};
 }

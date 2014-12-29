@@ -20,6 +20,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#ifdef _WINDOWS
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#endif
+
 #include "PolyHTTPFetcher.h"
 #include "PolyLogger.h"
 #include "PolyCoreServices.h"
@@ -35,8 +48,9 @@ HTTPFetcher::HTTPFetcher(String address) : Threaded() {
 	int protocolIndex = address.find_first_of("://");
     if (protocolIndex != 0){
 		protocolIndex += strlen("://");
+		protocol = address.substr(0, protocolIndex - strlen("://"));
 		int pathIndex = address.find_first_of("/", protocolIndex);
-		String path = address.substr(pathIndex+1, address.length());
+		path = address.substr(pathIndex+1, address.length());
 		
 		if (pathIndex != 0){
 			host = address.substr(protocolIndex, pathIndex - protocolIndex);
@@ -45,7 +59,7 @@ HTTPFetcher::HTTPFetcher(String address) : Threaded() {
 		}
 	} else {
 		int pathIndex = address.find_first_of("/");
-		String path = address.substr(pathIndex+1, address.length());
+		path = address.substr(pathIndex+1, address.length());
 
 		if (pathIndex != 0){
 			host = address.substr(0, pathIndex);
@@ -54,49 +68,9 @@ HTTPFetcher::HTTPFetcher(String address) : Threaded() {
 		}
 	}
 
-	struct sockaddr_in server;
-		
-	addrinfo *result = NULL;
-	addrinfo hints;
+	createSocket();
 
-    //Create a socket
-#if PLATFORM == PLATFORM_WINDOWS
-    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-        Logger::log("HTTP Fetcher: Could not create socket: %d\n", WSAGetLastError());
-#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
-    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        Logger::log("HTTP Fetcher: Could not create socket: %s\n", strerror(errno));
-#endif
-	}
-
-    memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	
-	if (getaddrinfo(host.c_str(), address.substr(0, protocolIndex - strlen("://")).c_str(), &hints, &result) != 0) {
-#if PLATFORM == PLATFORM_WINDOWS
-		Logger::log("HTTP Fetcher: Address resolve error: %d\n", WSAGetLastError());
-#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
-        Logger::log("HTTP Fetcher: Address resolve error: %s\n", strerror(errno));
-#endif
-		return;
-	}
-	
-	server.sin_addr = ((sockaddr_in*)result->ai_addr)->sin_addr;
-	server.sin_family = AF_INET;
-	server.sin_port = ((sockaddr_in*)result->ai_addr)->sin_port;
-
-	//Connect to remote server
-	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0) {
-#if PLATFORM == PLATFORM_WINDOWS
-        Logger::log("HTTP Fetcher: connect error code: %d\n", WSAGetLastError());
-#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
-        Logger::log("HTTP Fetcher: connect error code: %s\n", strerror(errno));
-#endif
-		return;
-	}
-
+	threadRunning = true;
 	CoreServices::getInstance()->getCore()->createThread(this);
 }
 
@@ -108,6 +82,51 @@ HTTPFetcher::~HTTPFetcher(){
 #endif
 }
 
+void HTTPFetcher::createSocket(){
+	struct sockaddr_in server;
+
+	addrinfo *result = NULL;
+	addrinfo hints;
+
+	//Create a socket
+#if PLATFORM == PLATFORM_WINDOWS
+	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+		Logger::log("HTTP Fetcher: Could not create socket: %d\n", WSAGetLastError());
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		Logger::log("HTTP Fetcher: Could not create socket: %s\n", strerror(errno));
+#endif
+	}
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	if (getaddrinfo(host.c_str(), protocol.c_str(), &hints, &result) != 0) {
+#if PLATFORM == PLATFORM_WINDOWS
+		Logger::log("HTTP Fetcher: Address resolve error: %d\n", WSAGetLastError());
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		Logger::log("HTTP Fetcher: Address resolve error: %s\n", strerror(errno));
+#endif
+		return;
+	}
+
+	server.sin_addr = ((sockaddr_in*)result->ai_addr)->sin_addr;
+	server.sin_family = AF_INET;
+	server.sin_port = ((sockaddr_in*)result->ai_addr)->sin_port;
+
+	//Connect to remote server
+	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0) {
+#if PLATFORM == PLATFORM_WINDOWS
+		Logger::log("HTTP Fetcher: connect error code: %d\n", WSAGetLastError());
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		Logger::log("HTTP Fetcher: connect error code: %s\n", strerror(errno));
+#endif
+		return;
+	}
+}
+
 void HTTPFetcher::updateThread(){
 	//Send some data
 	String request;
@@ -116,16 +135,21 @@ void HTTPFetcher::updateThread(){
 	} else {
 		request = "GET / " + String(HTTP_VERSION) + "\r\nHost: " + host + "\r\nUser-Agent: " + DEFAULT_USER_AGENT + "\r\nConnection: close\r\n\r\n";
 	}
+
+	HTTPFetcherEvent *event = new HTTPFetcherEvent();
+
 	if (send(s, request.c_str(), strlen(request.c_str()), 0) < 0) {
 #if PLATFORM == PLATFORM_WINDOWS
         Logger::log("HTTP Fetcher: Send failed: %d\n", WSAGetLastError());
+		event->errorCode = WSAGetLastError();
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
         Logger::log("HTTP Fetcher: Send failed: %s\n",strerror(errno));
+		event->errorCode = strerror(errno);
 #endif
+		createSocket();
+		dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_ERROR);
 		return;
 	}
-
-	HTTPFetcherEvent *event = new HTTPFetcherEvent();
 
 	char *server_reply = (char*)malloc(DEFAULT_PAGE_BUF_SIZE);
 	unsigned long recv_size;
@@ -134,10 +158,14 @@ void HTTPFetcher::updateThread(){
 #if PLATFORM == PLATFORM_WINDOWS
 		if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == SOCKET_ERROR) {
 			Logger::log("HTTP Fetcher: recv failed: %d\n", WSAGetLastError());
+			event->errorCode = WSAGetLastError();
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 		if ((recv_size = recv(s, server_reply, DEFAULT_PAGE_BUF_SIZE, 0)) == -1) {
 			Logger::log("HTTP Fetcher: recv failed: %s\n", strerror(errno));
+			event->errorCode = strerror(errno);
 #endif
+			dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_ERROR);
+			killThread();
 			return;
 		}
 
@@ -146,18 +174,26 @@ void HTTPFetcher::updateThread(){
 		event->data += String(server_reply);
 	} while (recv_size != 0);
 
+	if (event->data == ""){
+		createSocket();
+		return;
+	}
+
 	char *charIndex = strstr(const_cast<char*>(event->data.c_str()), "HTTP/");
     if(charIndex == NULL){
-        return;
+		killThread();
+		return;
     }
     int i;
-	if (sscanf(charIndex, "HTTP/1.1 %d", &i) != 1 || i < 200 || i>299) {
+	if (sscanf(charIndex + strlen("HTTP/1.1"), "%d", &i) != 1 || i < 200 || i>299) {
+		killThread();
 		return;
 	}
 	charIndex = strstr(const_cast<char*>(event->data.c_str()), "Content-Length:");
 	if (charIndex == NULL)
 		charIndex = strstr(const_cast<char*>(event->data.c_str()), "Content-length:");
 	if (sscanf(charIndex + strlen("content-length: "), "%d", &i) != 1) {
+		killThread();
 		return;
 	}
 
@@ -171,6 +207,7 @@ void HTTPFetcher::updateThread(){
 
 void HTTPFetcher::fetchFile(String pathToFile){
 	path = pathToFile;
+	threadRunning = true;
 	CoreServices::getInstance()->getCore()->createThread(this);
 }
 
