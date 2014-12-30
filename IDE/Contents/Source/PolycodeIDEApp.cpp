@@ -1278,6 +1278,10 @@ void PolycodeIDEApp::loadConfigFile() {
 			} else {
 				config->setNumericValue("Polycode", "keyZoom", 6);
 			}
+		} else {
+			config->setNumericValue("Polycode", "keyPan", 5);
+			config->setNumericValue("Polycode", "keyRot", 0);
+			config->setNumericValue("Polycode", "keyZoom", 6);
 		}
 	} else {
 		config->setStringValue("Polycode", "useExternalTextEditor", "false");

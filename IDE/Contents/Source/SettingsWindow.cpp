@@ -303,6 +303,10 @@ void SettingsWindow::updateUI() {
 		textureFilteringBox->setSelectedIndex(0);	
 	}
 	
+	keyPan->setSelectedIndex(config->getNumericValue("Polycode", "keyPan"), true);
+	keyRot->setSelectedIndex(config->getNumericValue("Polycode", "keyRot"), true);
+	keyZoom->setSelectedIndex(config->getNumericValue("Polycode", "keyZoom"), true);
+	
 }
 
 int SettingsWindow::setKeyProp(String keyString){
