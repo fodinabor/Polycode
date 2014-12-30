@@ -170,9 +170,9 @@ namespace Polycode {
 	void Core::loseFocus() {
 		if(pauseOnLoseFocus) {
 			paused = true;
+			refreshInterval = 1000 / 2;
 		}
 		input->clearInput();
-		refreshInterval = 1000 / 2;
 		dispatchEvent(new Event(), EVENT_LOST_FOCUS);
 	}
 	
