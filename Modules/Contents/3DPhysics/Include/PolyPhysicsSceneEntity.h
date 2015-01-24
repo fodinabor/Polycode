@@ -62,7 +62,8 @@ namespace Polycode {
 		Vector3 getSpin();
 		
 			void setRotation(Quaternion quat);
-			
+			Quaternion getRotation();
+
 			void setVelocity(Vector3 velocity);
 			void warpTo(Vector3 position, bool resetRotation);
 			

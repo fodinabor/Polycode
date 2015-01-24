@@ -236,6 +236,12 @@ void PhysicsEntity::setRotation(Quaternion quat) {
 	rigidBody->setWorldTransform(t);
 }
 
+Quaternion PhysicsEntity::getRotation(){
+	btTransform t = rigidBody->getWorldTransform();
+	btQuaternion q = t.getRotation();
+	return Quaternion(q.getW(), q.getX(), q.getY(), q.getZ());
+}
+
 void PhysicsEntity::setVelocity(Vector3 velocity) {
 	rigidBody->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
 }
