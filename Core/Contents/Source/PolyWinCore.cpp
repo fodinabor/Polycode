@@ -172,7 +172,9 @@ void Win32Core::captureMouse(bool newval) {
 
 		GetClientRect(core->hWnd, &crect);
 		arect = crect;
-		AdjustWindowRectEx(&arect, WS_CAPTION | WS_BORDER, FALSE, 0);
+		if (!fullScreen){
+			AdjustWindowRectEx(&arect, WS_CAPTION | WS_BORDER, FALSE, 0);
+		}
 
 		rect.left += (crect.left - arect.left);
 		rect.right += (crect.right - arect.right);
@@ -1071,11 +1073,12 @@ std::vector<Polycode::Rectangle> Win32Core::getVideoModes() {
 
 String Win32Core::executeExternalCommand(String command,  String args, String inDirectory) {
 	String execInDirectory = inDirectory;
+	
 	if(inDirectory == "") {
 		execInDirectory = defaultWorkingDirectory;
 	}
 
-	String cmdString = "cd \""+execInDirectory+"\" & "+command+" "+args;
+	String cmdString = inDirectory.substr(0, inDirectory.find_first_of(":")+1)+" & cd \"" + execInDirectory + "\" & " + command + " " + args;
 
 	char   psBuffer[128];
 	FILE   *pPipe;
