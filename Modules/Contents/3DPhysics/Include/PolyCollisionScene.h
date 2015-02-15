@@ -33,6 +33,7 @@ class btCollisionWorld;
 namespace Polycode {
 
 class Entity;
+class SceneMesh;
 class CollisionEntity;
 
 /**
@@ -79,6 +80,29 @@ struct CollisionResult {
 		Vector3 position;
 	};
 
+	class CollisionSceneDebugDraw : public btIDebugDraw {
+	public:
+		CollisionSceneDebugDraw();
+
+		void Update(btCollisionWorld *world);
+		Entity* getDebugEntity();
+
+		void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
+		void drawSphere(btScalar radius, const btTransform& transform, const btVector3& color);
+		void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color){};
+		void drawTriangle(const btVector3& v0, const btVector3& v1, const btVector3& v2, const btVector3& color, btScalar alpha);
+
+		void reportErrorWarning(const char* warningString);
+		void draw3dText(const btVector3& location, const char* textString);
+		void setDebugMode(int debugMode);
+		int  getDebugMode() const;
+
+	protected:
+		Entity *debugEntity;
+		DebugDrawModes mode;
+		SceneMesh *lineMesh;
+	};
+
 	/**
 	* A scene that tracks collisions between entities. The collision scene acts like a regular scene, only it automatically tracks collisions between its child entities.
 	*/
@@ -93,6 +117,7 @@ struct CollisionResult {
 			void initCollisionScene(Vector3 size);
 		
 			virtual void fixedUpdate();
+			void Update();
 			
 			virtual void removeEntity(Entity *entity);
 						
@@ -118,6 +143,8 @@ struct CollisionResult {
 			void removeCollision(Entity *entity);
 			void adjustForCollision(CollisionEntity *collisionEntity);
 			
+			void enableDebug(bool val);
+
 			//@}
 			// ----------------------------------------------------------------------------------------------------------------
 			
@@ -129,6 +156,8 @@ struct CollisionResult {
 			btDefaultCollisionConfiguration *collisionConfiguration;
 			btCollisionDispatcher *dispatcher;
 			btAxisSweep3*  axisSweep;
+
+			CollisionSceneDebugDraw* debugDrawer;
 	};
 
 }

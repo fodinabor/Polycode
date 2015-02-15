@@ -157,6 +157,13 @@ void Entity::setOwnsChildrenRecursive(bool val) {
 	}
 }
 
+void Entity::clearChildren(){
+	for (int i = children.size()-1; i > 0; i--){
+		delete children[i];
+	}
+	children.clear();
+}
+
 std::vector<Entity*> Entity::getEntitiesByLayerID(unsigned char layerID, bool recursive) const {
 	std::vector<Entity*> retVector;
     

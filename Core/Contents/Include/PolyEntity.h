@@ -256,6 +256,12 @@ namespace Polycode {
              * @see ownsChildren
              */
 			void setOwnsChildrenRecursive(bool val);
+
+			/**
+			* Removes all children
+			*/
+			void clearChildren();
+
 			//@}
 			// ----------------------------------------------------------------------------------------------------------------
 				
