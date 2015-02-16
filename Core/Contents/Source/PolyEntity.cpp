@@ -78,6 +78,7 @@ void Entity::initEntity() {
 	yAdjust = 1.0;
 	lastClickTicks = 0.0;
     rendererVis = true;
+	forceRender = false;
     layerID = 0;
 }
 
@@ -588,6 +589,15 @@ void Entity::setRenderer(Renderer *renderer) {
 void Entity::renderChildren() {
 	for(int i=0;i<children.size();i++) {
 		children[i]->transformAndRender();
+	}
+}
+
+void Entity::setForceRender(bool val, bool recursive){
+	forceRender = val;
+	if (recursive){
+		for (int i = 0; i<children.size(); i++) {
+			children[i]->setForceRender(val);
+		}
 	}
 }
 

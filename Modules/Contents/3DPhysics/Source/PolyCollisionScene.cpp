@@ -271,9 +271,9 @@ CollisionEntity *CollisionScene::addCollisionChild(Entity *newEntity, int type, 
 
 }
 
-void CollisionScene::enableDebug(bool val){
+void CollisionScene::setDebug(bool val, int mode){
 	if (val){
-		world->getDebugDrawer()->setDebugMode(1);
+		world->getDebugDrawer()->setDebugMode(mode);
 		this->addEntity(debugDrawer->getDebugEntity());
 	} else {
 		world->getDebugDrawer()->setDebugMode(0);
@@ -282,14 +282,9 @@ void CollisionScene::enableDebug(bool val){
 }
 
 void CollisionSceneDebugDraw::drawLine(const btVector3& from, const btVector3& to, const btVector3& color){
-	//Vector3 f(from.getX(), from.getY(), from.getZ());
-	//Vector3 t(to.getX(), to.getY(), to.getZ());
-	
-	//SceneLine* line = new SceneLine(f, t);
-	//line->setColor(color.getX(), color.getY(), color.getZ(), 1.0);
-
 	lineMesh->getMesh()->addVertex(from.getX(), from.getY(), from.getZ());
 	lineMesh->getMesh()->addVertex(to.getX(), to.getY(), to.getZ());
+	lineMesh->setColor(color.getX(), color.getY(), color.getZ(), 1.0);
 }
 
 void CollisionSceneDebugDraw::drawSphere(btScalar radius, const btTransform& transform, const btVector3& color){
@@ -385,9 +380,10 @@ int CollisionSceneDebugDraw::getDebugMode() const {
 
 void CollisionSceneDebugDraw::Update(btCollisionWorld* world){
 	debugEntity->clearChildren();
-	lineMesh->getMesh()->vertexPositionArray.data.clear();
+	lineMesh->getMesh()->clearMesh();
 	debugEntity->addChild(lineMesh);
 	world->debugDrawWorld();
+	debugEntity->setForceRender(true, true);
 }
 
 Entity* CollisionSceneDebugDraw::getDebugEntity(){

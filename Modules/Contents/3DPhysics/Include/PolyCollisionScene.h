@@ -143,7 +143,12 @@ struct CollisionResult {
 			void removeCollision(Entity *entity);
 			void adjustForCollision(CollisionEntity *collisionEntity);
 			
-			void enableDebug(bool val);
+			/**
+			 * Sets whether you are visually debugging the CollsionShapes
+			 * @param val If true you are debugging. Initially set to false.
+			 * @param mode Debug mode as int. Defaults to wireframe visualisation. For available values see "btIDebugDraw.h"
+			 */
+			void setDebug(bool val, int mode = 1);
 
 			//@}
 			// ----------------------------------------------------------------------------------------------------------------
