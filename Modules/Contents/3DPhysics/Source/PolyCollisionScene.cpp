@@ -283,8 +283,15 @@ void CollisionScene::setDebug(bool val, int mode){
 
 void CollisionSceneDebugDraw::drawLine(const btVector3& from, const btVector3& to, const btVector3& color){
 	lineMesh->getMesh()->addVertex(from.getX(), from.getY(), from.getZ());
+	lineMesh->getMesh()->vertexColorArray.data.push_back(color.getX());
+	lineMesh->getMesh()->vertexColorArray.data.push_back(color.getY());
+	lineMesh->getMesh()->vertexColorArray.data.push_back(color.getZ());
+	lineMesh->getMesh()->vertexColorArray.data.push_back(1.0);
 	lineMesh->getMesh()->addVertex(to.getX(), to.getY(), to.getZ());
-	lineMesh->setColor(color.getX(), color.getY(), color.getZ(), 1.0);
+	lineMesh->getMesh()->vertexColorArray.data.push_back(color.getX());
+	lineMesh->getMesh()->vertexColorArray.data.push_back(color.getY());
+	lineMesh->getMesh()->vertexColorArray.data.push_back(color.getZ());
+	lineMesh->getMesh()->vertexColorArray.data.push_back(1.0);
 }
 
 void CollisionSceneDebugDraw::drawSphere(btScalar radius, const btTransform& transform, const btVector3& color){
@@ -326,6 +333,7 @@ CollisionSceneDebugDraw::CollisionSceneDebugDraw(){
 	
 	lineMesh = new SceneMesh(Mesh::LINE_MESH);
 	lineMesh->setMaterialByName("UnlitWireframe");
+	lineMesh->getMesh()->useVertexColors = true;
 	debugEntity->addChild(lineMesh);
 
 	mode = DBG_NoDebug;
