@@ -50,7 +50,7 @@ PFNWGLGETSWAPINTERVALEXTPROC    wglGetSwapIntervalEXT = NULL;
 using namespace Polycode;
 
 long getThreadID() {
-	return 0;
+	return GetCurrentThreadId();
 }
 
 extern Win32Core *core;
