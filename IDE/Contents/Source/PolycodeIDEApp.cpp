@@ -728,8 +728,9 @@ void PolycodeIDEApp::checkUpdates(const String updateFile){
 				if (updateObj.root["url"]) {
 					Services()->getConfig()->setStringValue("Polycode", "UpdateURL", updateObj.root["url"]->stringVal);
 					Services()->getConfig()->setStringValue("Polycode", "UpdateVersion", newVersion);
-					UpdaterWindow *update = new UpdaterWindow();
-					frame->showModal(update);
+					updaterWindow = new UpdaterWindow();
+					updaterWindow->addEventListener(this, UIEvent::OK_EVENT);
+					frame->showModal(updaterWindow);
 				}
 			}
 		}
@@ -1175,8 +1176,16 @@ void PolycodeIDEApp::handleEvent(Event *event) {
 		}
 	}
 
-	if (event->getEventCode() == HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED){
-		checkUpdates(((HTTPFetcherEvent*)event)->data);
+	if (event->getDispatcher() == updater){
+		if (event->getEventCode() == HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED){
+			HTTPFetcherEvent* e = (HTTPFetcherEvent*)event;
+			if (e->storedInFile){
+				updaterWindow->openUpdate(e->data);
+				frame->showModal(updaterWindow);
+			} else {
+				checkUpdates(e->data);
+			}
+		}
 	}
 }
 

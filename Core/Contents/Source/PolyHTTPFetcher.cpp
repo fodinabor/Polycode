@@ -40,9 +40,12 @@ THE SOFTWARE.
 
 using namespace Polycode;
 
-HTTPFetcher::HTTPFetcher(String address) : Threaded() {
+HTTPFetcher::HTTPFetcher(String address, bool saveToPath, String savePath) : Threaded() {
 	core = CoreServices::getInstance()->getCore();
 	eventMutex = core->getEventMutex();
+
+	storeInFile = saveToPath;
+	this->savePath = savePath;
 
 	this->address = address;
 	int protocolIndex = address.find_first_of("://");
@@ -131,6 +134,16 @@ bool HTTPFetcher::createSocket(){
 }
 
 void HTTPFetcher::updateThread(){
+	int protocolIndex = path.find_first_of("://");
+	if (protocolIndex != 0){
+		protocolIndex += strlen("://");
+		protocol = path.substr(0, protocolIndex - strlen("://"));
+		int pathIndex = path.find_first_of("/", protocolIndex);
+		path = path.substr(pathIndex + 1, path.length());
+	} else if (path.find_first_of("/") == 0) {
+		path = path.substr(1, path.length());
+	}
+
 	//Send some data
 	String request;
 	if (path != "") {
@@ -154,9 +167,70 @@ void HTTPFetcher::updateThread(){
 		return;
 	}
 
-	char *server_reply = (char*)malloc(DEFAULT_PAGE_BUF_SIZE);
+	char *server_reply = (char*)malloc(1);
 	char *rec = server_reply;
 	unsigned long recv_size = 0, totalRec = 0;
+	do {
+		//Receive a reply from the server
+#if PLATFORM == PLATFORM_WINDOWS
+		if ((recv_size = recv(s, rec, 1, 0)) == SOCKET_ERROR) {
+			Logger::log("HTTP Fetcher: recv failed: %d\n", WSAGetLastError());
+			event->errorCode = WSAGetLastError();
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		if ((recv_size = recv(s, rec, DEFAULT_PAGE_BUF_SIZE, 0)) == -1) {
+			Logger::log("HTTP Fetcher: recv failed: %s\n", strerror(errno));
+			event->errorCode = strerror(errno);
+#endif
+			dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_ERROR);
+			killThread();
+			return;
+		}
+
+		
+		totalRec += recv_size;
+		server_reply = (char*)realloc(server_reply, totalRec + 1);
+		rec = server_reply + totalRec;
+	} while (recv_size != 0 && strstr(server_reply, "\r\n\r\n") == NULL);
+
+	server_reply[totalRec] = '\0';
+	event->data = server_reply;
+
+	if (strlen(event->data) == 0){
+		createSocket();
+		return;
+	}
+
+	char *charIndex = strstr(event->data, "HTTP/");
+    if(charIndex == NULL){
+		killThread();
+		return;
+    }
+    int i;
+	if (sscanf(charIndex + strlen("HTTP/1.1"), "%d", &i) != 1 || i < 200 || i>299) {
+		event->errorCode = i;
+		dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_ERROR);
+		killThread();
+		return;
+	}
+	charIndex = strstr(event->data, "Content-Length:");
+	if (charIndex == NULL)
+		charIndex = strstr(event->data, "Content-length:");
+	if (sscanf(charIndex + strlen("content-length: "), "%d", &i) != 1) {
+		dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_ERROR);
+		killThread();
+		return;
+	}
+
+	FILE* tempFile;
+	if (storeInFile){
+		tempFile = fopen(savePath.c_str(), "wb");
+	}
+
+	free(server_reply);
+	server_reply = (char*)malloc(DEFAULT_PAGE_BUF_SIZE);
+	rec = server_reply;
+	recv_size = 0, totalRec = 0;
+
 	do {
 		//Receive a reply from the server
 #if PLATFORM == PLATFORM_WINDOWS
@@ -173,50 +247,42 @@ void HTTPFetcher::updateThread(){
 			return;
 		}
 
-		
+
 		totalRec += recv_size;
-		server_reply = (char*)realloc(server_reply, totalRec + DEFAULT_PAGE_BUF_SIZE);
-		rec = server_reply+totalRec;
-	} while (recv_size != 0);
+		if (!storeInFile){
+			server_reply = (char*)realloc(server_reply, totalRec + DEFAULT_PAGE_BUF_SIZE);
+			rec = server_reply + totalRec;
+		} else {
+			server_reply[recv_size] = '\0';
+			fwrite(server_reply, 1, recv_size, tempFile);
+		}
+	} while (recv_size !=0 && totalRec < i);
 
-	server_reply[totalRec] = '\0';
-	event->data = server_reply;
-
-	if (event->data == ""){
-		createSocket();
-		return;
-	}
-
-	char *charIndex = strstr(event->data, "HTTP/");
-    if(charIndex == NULL){
-		killThread();
-		return;
-    }
-    int i;
-	if (sscanf(charIndex + strlen("HTTP/1.1"), "%d", &i) != 1 || i < 200 || i>299) {
+	if (totalRec > i){
+		event->errorCode = HTTPFetcher::HTTPFETCHER_ERROR_WRONG_SIZE;
+		dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_ERROR);
 		killThread();
 		return;
 	}
-	charIndex = strstr(event->data, "Content-Length:");
-	if (charIndex == NULL)
-		charIndex = strstr(event->data, "Content-length:");
-	if (sscanf(charIndex + strlen("content-length: "), "%d", &i) != 1) {
-		killThread();
-		return;
+	if (storeInFile){
+		event->storedInFile = true;
+		event->data = (char*)malloc(sizeof(char)*(savePath.length() + 1));
+		strcpy(event->data, savePath.c_str());
+		fclose(tempFile);
+	} else {
+		event->data = server_reply;
 	}
 
-	event->contentSize = min(i, totalRec);
-
-	charIndex = strstr(event->data, "\r\n\r\n") + strlen("\r\n\r\n");
-
-    event->data = charIndex;
+	event->contentSize = totalRec;
 	bodyReturn = event->data;
     dispatchEvent(event, HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED);
 	killThread();
 }
 
-void HTTPFetcher::fetchFile(String pathToFile){
+void HTTPFetcher::fetchFile(String pathToFile, bool saveToPath, String savePath){
 	path = pathToFile;
+	this->savePath = savePath;
+	this->storeInFile = saveToPath;
 	threadRunning = true;
 	CoreServices::getInstance()->getCore()->createThread(this);
 }

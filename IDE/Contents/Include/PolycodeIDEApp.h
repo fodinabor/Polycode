@@ -20,6 +20,8 @@
  THE SOFTWARE.
  */
 
+#pragma once
+
 #if defined(__APPLE__) && defined(__MACH__)
 #import "PolycodeView.h"
 #elif defined(_WINDOWS)
@@ -73,8 +75,6 @@ public:
 	
 	void stopProject();
 
-	void checkUpdates(const String updateFile);
-	
 	// menu commands
 	void renameFile();
 	void removeFile();
@@ -130,6 +130,8 @@ public:
 	
 protected:
 
+	void checkUpdates(const String updateFile);
+
 	bool quittingApp;
 	bool runNextFrame;
 
@@ -143,6 +145,8 @@ protected:
 	PolycodeRemoteDebugger *debugger;
 
 	UIMenuBar *menuBar;
+
+	UpdaterWindow *updaterWindow;
 	
 private:
 

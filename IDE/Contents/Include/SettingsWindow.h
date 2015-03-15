@@ -54,11 +54,12 @@ class SettingsWindow : public UIWindow {
 
 class UpdateEvent : public Event {
 public:
-	UpdateEvent(String url) { this->url = url; }
+	UpdateEvent() { this->url = ""; }
 	~UpdateEvent() {}
 	String url;
 
-	static const int EVENT_UPDATE_AVAILABLE = 0;
+	static const int EVENT_UPDATE_AVAILABLE = 0x500+10;
+	static const int EVENT_UPDATE_DOWNLOADED = 0x500+11;
 };
 
 class UpdaterWindow : public UIWindow {
@@ -67,8 +68,8 @@ public:
 	~UpdaterWindow();
 
 	void handleEvent(Event *e);
-	void updateUI();
+	void openUpdate(String pathToUpdate);
 
-	UILabel *newUpdateNot;
+	UIMultilineLabel *updateNot;
 	UIButton *openDownloadButton;
 };

@@ -34,14 +34,15 @@ namespace Polycode {
 	
 	class HTTPFetcherEvent : public Event {
 	public:
-		HTTPFetcherEvent() { contentSize = 0; errorCode = 0; data = NULL; }
+		HTTPFetcherEvent() { contentSize = 0; errorCode = 0; data = NULL; storedInFile = false; }
 		~HTTPFetcherEvent(){}
 
 		char* data;
 		int errorCode;
 
+		bool storedInFile;
 		unsigned long contentSize;
-		
+
 		static const int EVENTBASE_SOCKETEVENT = 0x500;
 		static const int EVENT_HTTP_ERROR = EVENTBASE_SOCKETEVENT + 2;
 		static const int EVENT_HTTP_DATA_RECEIVED = EVENTBASE_SOCKETEVENT + 3;
@@ -49,7 +50,7 @@ namespace Polycode {
 
 	class HTTPFetcher : public Threaded {
 	public:
-		HTTPFetcher(String address);
+		HTTPFetcher(String address, bool saveToPath = false, String savePath = "");
 		~HTTPFetcher();
 
 		String getData();
@@ -58,7 +59,11 @@ namespace Polycode {
 		* Fetches a file given in the param
 		* @param pathToFile Path String to the new file to fetch from the same host. Without leading "/"
 		*/
-		void fetchFile(String pathToFile);
+		void fetchFile(String pathToFile, bool saveToPath = false, String savePath = "");
+
+		static const int HTTPFETCHER_ERROR_WRONG_SIZE = 0x10F00;
+
+		bool storeInFile;
 
 	private:
         int s;
@@ -67,6 +72,7 @@ namespace Polycode {
 		String path;
 		String host;
 		String protocol;
+		String savePath;
 
 		bool createSocket();
 		void updateThread();

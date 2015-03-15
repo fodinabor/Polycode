@@ -16,6 +16,7 @@
  THE SOFTWARE.
  */
 
+#include "PolycodeIDEApp.h"
 #include "SettingsWindow.h"
 #include "PolycodeFrame.h"
 #include "PolycodeTextEditor.h"
@@ -23,6 +24,7 @@
 extern PolycodeFrame *globalFrame;
 extern UIGlobalMenu *globalMenu;
 extern SyntaxHighlightTheme *globalSyntaxTheme;
+extern PolycodeIDEApp *globalApp;
 
 SettingsWindow::SettingsWindow() : UIWindow(L"Settings", SETTINGS_WINDOW_WIDTH, SETTINGS_WINDOW_HEIGHT) {
 
@@ -215,10 +217,11 @@ SettingsWindow::~SettingsWindow() {
 UpdaterWindow::UpdaterWindow() : UIWindow("New Update!", 150,60) {
 	closeOnEscape = true;
 
-	newUpdateNot = new UILabel("Version: "+ Services()->getConfig()->getStringValue("Polycode", "UpdateVersion"), 12);
+	updateNot = new UIMultilineLabel("Version: "+ Services()->getConfig()->getStringValue("Polycode", "UpdateVersion"), 12,2);
+	addChild(updateNot);
+	updateNot->setPosition(10, 25);
+
 	openDownloadButton = new UIButton("Download Update", 130);
-	addChild(newUpdateNot);
-	newUpdateNot->setPosition(10, 25);
 	addChild(openDownloadButton);
 	openDownloadButton->setPosition(10, 40);
 	openDownloadButton->addEventListener(this, UIEvent::CLICK_EVENT);
@@ -226,10 +229,15 @@ UpdaterWindow::UpdaterWindow() : UIWindow("New Update!", 150,60) {
 
 void UpdaterWindow::handleEvent(Event *e) {
 	if (e->getDispatcher() == openDownloadButton && e->getEventCode() == UIEvent::CLICK_EVENT) {
-		Services()->getCore()->openURL(Services()->getConfig()->getStringValue("Polycode","UpdateURL"));
-        dispatchEvent(new UIEvent(), UIEvent::CLOSE_EVENT);
+		globalApp->updater->fetchFile(Services()->getConfig()->getStringValue("Polycode", "UpdateURL"), true, "PolycodeUpdate" + Services()->getConfig()->getStringValue("Polycode", "UpdateVersion") + ".zip");
+		dispatchEvent(new UIEvent(), UIEvent::CLOSE_EVENT);
 	}
 	UIWindow::handleEvent(e);
+}
+
+void UpdaterWindow::openUpdate(String pathToUpdate){
+	updateNot->setText("Downloaded Update into\nyour Polycode Directory:\n"+pathToUpdate);
+	removeChild(openDownloadButton);
 }
 
 UpdaterWindow::~UpdaterWindow() {}
