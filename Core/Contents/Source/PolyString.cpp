@@ -116,12 +116,16 @@ void String::setDataWithEncoding(char *data, int encoding) {
 }
 
 bool String::isNumber() {
+	if (contents.find_first_not_of("0123456789.") == string::npos)
+		return true;
+	return false;
+}
+
+bool String::isInteger(){
 	std::string::const_iterator it = contents.begin();
 	while (it != contents.end() && isdigit(*it)) ++it;
 	return !contents.empty() && it == contents.end();
-}				
-
-
+}
 
 vector<String> String::split(const String &delim) const {
 	
