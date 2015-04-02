@@ -37,10 +37,14 @@ namespace Polycode {
 		HTTPFetcherEvent() { contentSize = 0; errorCode = 0; data = NULL; storedInFile = false; }
 		~HTTPFetcherEvent(){}
 
+		//If storedInFile: data is the file path, else: data contains all the fetched data
 		char* data;
+		//Error code: contains either the errno / WSAError code or the HTTP error code or the HTTPFetcher error code
 		int errorCode;
 
+		//Has the data been saved to a file or is it shipped with this event?
 		bool storedInFile;
+		//Size of the HTTP reply
 		unsigned long contentSize;
 
 		static const int EVENTBASE_SOCKETEVENT = 0x500;
@@ -48,8 +52,18 @@ namespace Polycode {
 		static const int EVENT_HTTP_DATA_RECEIVED = EVENTBASE_SOCKETEVENT + 3;
 	};
 
+	/**
+	* A utility to download a file from the WWW through HTTP. It is threaded (and therefor non blocking).
+	* If you want to use the data you might add an EventListener for the HTTPFetcherEvent::EVENT_HTTP_DATA_RECEIVED event code.
+	*/
 	class HTTPFetcher : public Threaded {
 	public:
+		/*
+		* Connects to a host and fetches a file given in the param
+		* @param address Full path including the hostname (Domain or IP) and protocol (http://) aswell as the path to the file on the server
+		* @param saveToPath true if you want the file to be directly saved, false if you just want the data as char array
+		* @param savePath Path String where the file should be saved to
+		*/
 		HTTPFetcher(String address, bool saveToPath = false, String savePath = "");
 		~HTTPFetcher();
 
@@ -58,9 +72,12 @@ namespace Polycode {
 		/*
 		* Fetches a file given in the param
 		* @param pathToFile Path String to the new file to fetch from the same host. Without leading "/"
+		* @param saveToPath true if you want the file to be directly saved, false if you just want the data as char array
+		* @param savePath Path String where the file should be saved to
 		*/
 		void fetchFile(String pathToFile, bool saveToPath = false, String savePath = "");
 
+		//The received data is more or less than the HTTP header told us it should be
 		static const int HTTPFETCHER_ERROR_WRONG_SIZE = 0x10F00;
 
 		bool storeInFile;

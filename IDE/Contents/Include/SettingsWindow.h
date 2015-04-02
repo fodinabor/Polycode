@@ -52,16 +52,6 @@ class SettingsWindow : public UIWindow {
 		UIButton *okButton;
 };
 
-class UpdateEvent : public Event {
-public:
-	UpdateEvent() { this->url = ""; }
-	~UpdateEvent() {}
-	String url;
-
-	static const int EVENT_UPDATE_AVAILABLE = 0x500+10;
-	static const int EVENT_UPDATE_DOWNLOADED = 0x500+11;
-};
-
 class UpdaterWindow : public UIWindow {
 public:
 	UpdaterWindow();

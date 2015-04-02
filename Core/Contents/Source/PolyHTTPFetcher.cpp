@@ -223,6 +223,8 @@ void HTTPFetcher::updateThread(){
 
 	FILE* tempFile;
 	if (storeInFile){
+		if (savePath == "")
+			savePath = path;
 		tempFile = fopen(savePath.c_str(), "wb");
 	}
 
