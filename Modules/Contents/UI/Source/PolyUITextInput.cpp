@@ -2027,12 +2027,6 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 		return;
 	}
 
-	// indent/shift text
-	if (multiLine && key == KEY_TAB) {
-		shiftText(input->getKeyState(KEY_LSHIFT));
-		return;
-	}
-
 	if (multiLine && key == KEY_k && (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL))){
 		commentText(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT));
 	}
@@ -2070,14 +2064,16 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 	
 	if(key == KEY_TAB && multiLine) {
 		saveUndoState();
-		if(hasSelection)
-			deleteSelection();		
-		ctext = lines[actualLineOffset].text;
-		String text2 = ctext.substr(actualCaretPosition, ctext.length()-actualCaretPosition);
-		ctext = ctext.substr(0,actualCaretPosition);
-		ctext += (wchar_t)'\t' + text2;
-		actualCaretPosition++;
-		_changedText = true;		
+		if (hasSelection){
+			shiftText(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT));
+		} else {
+			ctext = lines[actualLineOffset].text;
+			String text2 = ctext.substr(actualCaretPosition, ctext.length() - actualCaretPosition);
+			ctext = ctext.substr(0, actualCaretPosition);
+			ctext += (wchar_t)'\t' + text2;
+			actualCaretPosition++;
+			_changedText = true;
+		}
 	}
 	
 	if(key == KEY_DELETE) {
@@ -2630,7 +2626,7 @@ void UITextInput::shiftText(bool left) {
 				if (indentType == INDENT_TAB) {
 					if (left) {
 						if (lines[i].text.substr(0,1) == t) {
-							lines[i].text = lines[i].text.substr(1, lines[i].text.length()-1);
+							lines[i].text = lines[i].text.substr(1);
 							caretPosition--;
 						}
 					} else {
