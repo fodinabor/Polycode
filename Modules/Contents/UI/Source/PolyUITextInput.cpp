@@ -735,73 +735,78 @@ void UITextInput::Resize(Number width, Number height) {
 int UITextInput::insertLine(String lineText) {
 	
 	numLines++;	
-		
-		String newText = lineText;
-		if(lines.size() > 0 && !settingText) {
-			String ctext = lines[actualLineOffset].text;
-			String text2 = ctext.substr(actualCaretPosition, ctext.length()-actualCaretPosition);
-			ctext = ctext.substr(0,actualCaretPosition);
-			lines[actualLineOffset].text = ctext;
-			newText = newText+text2;
-			actualCaretPosition=0;
-			caretPosition = 0;
-		}		
-		
-		vector<LineInfo>::iterator it;
-						
-		lineOffset = lineOffset + 1;
-		actualLineOffset = actualLineOffset + 1;
+
+	String newText = lineText;
 	
-		if(actualLineOffset >= lines.size()) {
-			it = lines.end();
-		} else {
-			it = lines.begin() + actualLineOffset;
+	if(lines.size() > 0 && !settingText) {
+		String ctext = lines[actualLineOffset].text;
+		int indent = ctext.count('\t');
+		String text2 = ctext.substr(actualCaretPosition, ctext.length()-actualCaretPosition);
+		ctext = ctext.substr(0,actualCaretPosition);
+		lines[actualLineOffset].text = ctext;
+		for (int i = 0; i < indent; i++){
+			newText = "\t" + newText;
 		}
-		
-		SyntaxHighlightToken _overrideToken;
-		
-		if(actualLineOffset > 0) {
-			if(lines[actualLineOffset-1].blockOverrideToken.overrideType != SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_START && lines[actualLineOffset-1].blockOverrideToken.overrideType != SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_END) { 
-				_overrideToken = lines[actualLineOffset-1].blockOverrideToken;
-			} else if(lines[actualLineOffset-1].blockOverrideToken.overrideType == SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_START) {
-				_overrideToken = lines[actualLineOffset-1].blockOverrideToken;
-				_overrideToken.overrideType = SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_LINE;
-			}
+		newText = newText+text2;
+		actualCaretPosition=indent;
+		caretPosition = indent;
+	}		
+	
+	vector<LineInfo>::iterator it;
+	
+	lineOffset = lineOffset + 1;
+	actualLineOffset = actualLineOffset + 1;
+	
+	if(actualLineOffset >= lines.size()) {
+		it = lines.end();
+	} else {
+		it = lines.begin() + actualLineOffset;
+	}
+	
+	SyntaxHighlightToken _overrideToken;
+	
+	if(actualLineOffset > 0) {
+		if(lines[actualLineOffset-1].blockOverrideToken.overrideType != SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_START && lines[actualLineOffset-1].blockOverrideToken.overrideType != SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_END) { 
+			_overrideToken = lines[actualLineOffset-1].blockOverrideToken;
+		} else if(lines[actualLineOffset-1].blockOverrideToken.overrideType == SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_START) {
+			_overrideToken = lines[actualLineOffset-1].blockOverrideToken;
+			_overrideToken.overrideType = SyntaxHighlightToken::TOKEN_TYPE_OVERRIDE_LINE;
 		}
-		
-		LineInfo info;
-		info.text = newText;
-		info.blockOverrideToken = _overrideToken;
-		lines.insert(it,info);
-		
-		WordWrapLine line;		
-		line.text = info.text;
-		line.isWordWrap = false;
-		line.blockOverrideToken = _overrideToken;
-		line.actualLineNumber = actualLineOffset+1;
-		lines[actualLineOffset].wordWrapLineIndex = lineOffset;
-		line.colorInfo = lines[actualLineOffset].colorInfo;
-		
-		vector<WordWrapLine>::iterator wit;
-		wit = wordWrapLines.begin() + lineOffset;
-		wordWrapLines.insert(wit,line);
+	}
+	
+	LineInfo info;
+	info.text = newText;
+	info.blockOverrideToken = _overrideToken;
+	lines.insert(it,info);
+	
+	WordWrapLine line;		
+	line.text = info.text;
+	line.isWordWrap = false;
+	line.blockOverrideToken = _overrideToken;
+	line.actualLineNumber = actualLineOffset+1;
+	lines[actualLineOffset].wordWrapLineIndex = lineOffset;
+	line.colorInfo = lines[actualLineOffset].colorInfo;
+	
+	vector<WordWrapLine>::iterator wit;
+	wit = wordWrapLines.begin() + lineOffset;
+	wordWrapLines.insert(wit,line);
 
 
-		for(int i=actualLineOffset+1; i < lines.size(); i++) {
-			lines[i].wordWrapLineIndex += 1;
-		}
-		
-		for(int i=lineOffset+1; i < wordWrapLines.size(); i++) {
-			wordWrapLines[i].actualLineNumber += 1;
-			wordWrapLines[i].dirty = true;
-		}
-		
-		if(!settingText) {
-		
+	for(int i=actualLineOffset+1; i < lines.size(); i++) {
+		lines[i].wordWrapLineIndex += 1;
+	}
+	
+	for(int i=lineOffset+1; i < wordWrapLines.size(); i++) {
+		wordWrapLines[i].actualLineNumber += 1;
+		wordWrapLines[i].dirty = true;
+	}
+	
+	if(!settingText) {
 		restructLines();
 		changedText(actualLineOffset-1, actualLineOffset);		
-		}		
-	return 1;	
+	}
+	//setCaretPosition(indent);
+	return 1;
 }
 
 void UITextInput::enableLineNumbers(bool val) {
@@ -1729,7 +1734,7 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 				setActualToCaret();			
 				updateCaretPosition();
 			}
-		} else if (input->getKeyState(KEY_LALT) || input->getKeyState(KEY_RALT)) {
+		} else if (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL)) {
 			if(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT)) {
 				if(hasSelection) {
 					setSelection(actualLineOffset, selectionLine, actualCaretPosition, caretSkipWordBack(selectionLine, selectionCaretPosition));
@@ -1798,7 +1803,7 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 					updateCaretPosition();
 				}
 			}
-		} else if (input->getKeyState(KEY_LALT) || input->getKeyState(KEY_RALT)) {
+		} else if (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL)) {
 			if(actualCaretPosition < lines[actualLineOffset].text.length()) {
 				if(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT)) {
 					if(hasSelection) {
@@ -2023,11 +2028,13 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 	}
 
 	// indent/shift text
-	if (multiLine && (key == KEY_LEFTBRACKET || key == KEY_RIGHTBRACKET) &&
-		(input->getKeyState(KEY_LSUPER) || input->getKeyState(KEY_RSUPER) ||
-			input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL))) {
-				shiftText( (key == KEY_RIGHTBRACKET) ? false : true );
-				return;
+	if (multiLine && key == KEY_TAB) {
+		shiftText(input->getKeyState(KEY_LSHIFT));
+		return;
+	}
+
+	if (multiLine && key == KEY_k && (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL))){
+		commentText(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT));
 	}
 
 	// at this point, return if certain modifier keys are held down so as not to potentially add any unwanted text
@@ -2617,7 +2624,7 @@ void UITextInput::shiftText(bool left) {
 		
 		if (hasSelection) {
 			for (int i = selectionTop; i <= selectionBottom; i++) {
-				if (i == selectionBottom && selectionCaretPosition <= 0)
+				if (i == selectionBottom && selectionR < 0)
 					// at least one character of bottom line needs to be selected before indenting, so...
 					break;
 				if (indentType == INDENT_TAB) {
@@ -2638,8 +2645,10 @@ void UITextInput::shiftText(bool left) {
 					}
 				}
 			}
-		}
-		else {
+			changedText(selectionTop, selectionBottom);
+			updateCaretPosition();
+			setSelection(selectionTop, selectionBottom, 0, lines[selectionBottom].text.length());
+		} else {
 			if (indentType == INDENT_TAB) {
 				if (left) {
 					if (lines[lineOffset].text.substr(0,1) == t) {
@@ -2657,10 +2666,9 @@ void UITextInput::shiftText(bool left) {
 					// TODO
 				}
 			}
+			changedText(lineOffset, lineOffset);
+			updateCaretPosition();
 		}
-		
-		changedText(selectionTop, selectionBottom);
-		updateCaretPosition();
 	}
 }
 
@@ -2678,4 +2686,55 @@ void UITextInput::convertIndentToTabs() {
 		
 		//TODO
 	}
+}
+
+void UITextInput::commentText(bool uncomment){
+	saveUndoState();
+
+	int selL = selectionL, selR = selectionR, selB = selectionBottom, selT = selectionTop;
+
+	if (!uncomment){
+		if ((selL == 0 && selR == lines[selB].text.length()) || !hasSelection){
+			for (int i = selT; i <= selB; i++){
+				lines[i].text = "--" + lines[i].text;
+			}
+
+			selR = lines[selB].text.length();
+		} else {
+			lines[selT].text = lines[selT].text.substr(0, selL) + "--[[" + lines[selT].text.substr(selL);
+			lines[selB].text = lines[selB].text.substr(0, selR + strlen("--[[")) + "]]--" + lines[selB].text.substr(selR + strlen("--[["));
+
+			selL += strlen("--[[");
+			selR += strlen("--[[");
+		}
+	} else {
+		if ((selL == 0 && selR == lines[selB].text.length()) || !hasSelection){
+			for (int i = selT; i <= selB; i++){
+				if (lines[i].text.substr(0, 2) == "--"){
+					lines[i].text = lines[i].text.substr(2);
+				}
+				selR = lines[selB].text.length();
+			}
+		} else {
+			int l = lines[selT].text.find("--[[", MAX(0, selL - strlen("--[[")));
+			if (l > 0){
+				lines[selT].text = lines[selT].text.erase(l, strlen("--[["));
+				selL -= strlen("--[[");
+			}
+
+			int r = lines[selB].text.find("]]--", MAX(0, selR - strlen("]]--")));
+			if (r > 0){
+				lines[selB].text = lines[selB].text.erase(r, strlen("]]--"));
+				selR -= strlen("]]--");
+			}
+		}
+	}
+	actualCaretPosition = selL;
+	updateCaretPosition();
+
+	setActualLineOffset();
+
+	changedText(selT, selB);
+
+	setSelection(selT, selB, selL, selR);
 }

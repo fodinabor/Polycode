@@ -362,6 +362,8 @@ namespace Polycode {
             void convertIndentToTabs();
             void convertIndentToSpaces();
 			
+			void commentText(bool uncomment = false);
+
 			void doMultilineResize();
 						
 			static void setMenuSingleton(UIGlobalMenu *_globalMenu);
