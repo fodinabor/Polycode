@@ -1145,6 +1145,21 @@ void UITextInput::replaceAll(String what, String withWhat) {
 	}
 }
 
+void UITextInput::replaceLines(int start, String newLines) {
+	vector<String> newLinesV = newLines.split("\n");
+	int i;
+	for (i = 0; i < newLinesV.size(); i++){
+		if (lines.size() > start + i){
+			lines[i + start].text = newLinesV[i];
+		} else {
+			actualLineOffset = lines.size() - 1;
+			actualCaretPosition = lines[lines.size() - 1].text.length();
+			insertLine(newLinesV[i]);
+		}
+	}
+	changedText(start, start + i);
+}
+
 std::vector<FindMatch> UITextInput::getFindMatches(String stringToFind) {
 	std::vector<FindMatch> findMatches;
 	
@@ -1405,6 +1420,20 @@ String UITextInput::getSelectionText() {
 	totalText += lines[currentLine].text.substr(currentLeft, selectionR-currentLeft);
 
 	return totalText;
+}
+
+void UITextInput::readSelection(int& top, int& bottom, int& left, int& right){
+	if (hasSelection){
+		top = selectionTop;
+		bottom = selectionBottom;
+		left = selectionL;
+		right = selectionR;
+	} else {
+		top = lineOffset;
+		bottom = lineOffset;
+		left = caretPosition;
+		right = caretPosition;
+	}
 }
 
 void UITextInput::setSelectionColor(Color color) {
@@ -1734,7 +1763,11 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 				setActualToCaret();			
 				updateCaretPosition();
 			}
+#if defined(__APPLE__) && defined(__MACH__)
+		} else if (input->getKeyState(KEY_LALT) || input->getKeyState(KEY_RALT)) {
+#else
 		} else if (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL)) {
+#endif
 			if(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT)) {
 				if(hasSelection) {
 					setSelection(actualLineOffset, selectionLine, actualCaretPosition, caretSkipWordBack(selectionLine, selectionCaretPosition));
@@ -1803,7 +1836,11 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 					updateCaretPosition();
 				}
 			}
+#if defined(__APPLE__) && defined(__MACH__)
+		} else if (input->getKeyState(KEY_LALT) || input->getKeyState(KEY_RALT)) {
+#else
 		} else if (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL)) {
+#endif
 			if(actualCaretPosition < lines[actualLineOffset].text.length()) {
 				if(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT)) {
 					if(hasSelection) {
@@ -2027,9 +2064,19 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 		return;
 	}
 
-	if (multiLine && key == KEY_k && (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL))){
-		commentText(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT));
+	// indent/shift text
+#if defined(__APPLE__) && defined(__MACH__)
+	if (multiLine && (key == KEY_LEFTBRACKET || key == KEY_RIGHTBRACKET) &&
+		(input->getKeyState(KEY_LSUPER) || input->getKeyState(KEY_RSUPER) ||
+		input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL))) {
+		shiftText((key == KEY_RIGHTBRACKET) ? false : true);
+		return;
 	}
+#endif
+
+	//if (multiLine && key == KEY_k && (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL))){
+	//	commentText(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT));
+	//}
 
 	// at this point, return if certain modifier keys are held down so as not to potentially add any unwanted text
 	if (input->getKeyState(KEY_LSUPER) || input->getKeyState(KEY_RSUPER) || input->getKeyState(KEY_LCTRL) ||
@@ -2062,7 +2109,7 @@ void UITextInput::onKeyDown(PolyKEY key, wchar_t charCode) {
 		}
 	}
 	
-	if(key == KEY_TAB && multiLine) {
+	if (key == KEY_TAB && multiLine) {
 		saveUndoState();
 		if (hasSelection){
 			shiftText(input->getKeyState(KEY_LSHIFT) || input->getKeyState(KEY_RSHIFT));
@@ -2682,55 +2729,4 @@ void UITextInput::convertIndentToTabs() {
 		
 		//TODO
 	}
-}
-
-void UITextInput::commentText(bool uncomment){
-	saveUndoState();
-
-	int selL = selectionL, selR = selectionR, selB = selectionBottom, selT = selectionTop;
-
-	if (!uncomment){
-		if ((selL == 0 && selR == lines[selB].text.length()) || !hasSelection){
-			for (int i = selT; i <= selB; i++){
-				lines[i].text = "--" + lines[i].text;
-			}
-
-			selR = lines[selB].text.length();
-		} else {
-			lines[selT].text = lines[selT].text.substr(0, selL) + "--[[" + lines[selT].text.substr(selL);
-			lines[selB].text = lines[selB].text.substr(0, selR + strlen("--[[")) + "]]--" + lines[selB].text.substr(selR + strlen("--[["));
-
-			selL += strlen("--[[");
-			selR += strlen("--[[");
-		}
-	} else {
-		if ((selL == 0 && selR == lines[selB].text.length()) || !hasSelection){
-			for (int i = selT; i <= selB; i++){
-				if (lines[i].text.substr(0, 2) == "--"){
-					lines[i].text = lines[i].text.substr(2);
-				}
-				selR = lines[selB].text.length();
-			}
-		} else {
-			int l = lines[selT].text.find("--[[", MAX(0, selL - strlen("--[[")));
-			if (l > 0){
-				lines[selT].text = lines[selT].text.erase(l, strlen("--[["));
-				selL -= strlen("--[[");
-			}
-
-			int r = lines[selB].text.find("]]--", MAX(0, selR - strlen("]]--")));
-			if (r > 0){
-				lines[selB].text = lines[selB].text.erase(r, strlen("]]--"));
-				selR -= strlen("]]--");
-			}
-		}
-	}
-	actualCaretPosition = selL;
-	updateCaretPosition();
-
-	setActualLineOffset();
-
-	changedText(selT, selB);
-
-	setSelection(selT, selB, selL, selR);
 }
