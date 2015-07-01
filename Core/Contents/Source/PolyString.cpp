@@ -123,7 +123,7 @@ bool String::isNumber() {
 
 bool String::isInteger(){
 	std::string::const_iterator it = contents.begin();
-	while (it != contents.end() && (isdigit(*it) || *it == '+' || *it == '-') ++it;
+	while (it != contents.end() && (isdigit(*it) || *it == '+' || *it == '-')) ++it;
 	return !contents.empty() && it == contents.end();
 }
 
