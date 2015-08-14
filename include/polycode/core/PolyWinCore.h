@@ -22,11 +22,14 @@
 
 
 #pragma once
-#include "PolyGlobals.h"
-#include "PolyCore.h"
-#include "PolyInputKeys.h"
-#include "PolyInputEvent.h"
-#include "PolyRectangle.h"
+#include "polycode/core/PolyGlobals.h"
+#include "polycode/core/PolyCore.h"
+#include "polycode/core/PolyInputKeys.h"
+#include "polycode/core/PolyInputEvent.h"
+#include "polycode/core/PolyRectangle.h"
+#ifdef GL_ON_WIN
+#include "polycode/core/PolyOpenGLGraphicsInterface.h"
+#endif
 
 #include <winsock2.h>
 #include <windows.h>
@@ -204,8 +207,10 @@ public:
 
 		void setVideoMode(int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, bool retinaSupport = true);
 		
+		//bool createRenderContext();
 		void initContext(int aaLevel);
 		void destroyContext();
+		void flushRenderContext();
 
 		void getWglFunctionPointers();
 
@@ -236,7 +241,10 @@ public:
 		void initTouch();
 
 		void handleViewResize(int width, int height);
+		void handleVideoModeChange(VideoModeChangeInfo *modeInfo);
 		
+		bool systemParseFolder(const Polycode::String& pathString, bool showHidden, std::vector<OSFileEntry> &targetVector);
+
 		String executeExternalCommand(String command,  String args, String inDirectory);
 		std::vector<String> openFilePicker(std::vector<CoreFileExtension> extensions, bool allowMultiple);
 		String saveFilePicker(std::vector<CoreFileExtension> extensions);
@@ -266,7 +274,6 @@ public:
 		String copyDataString;
 
 	private:
-
 		Number scaleFactor;
 		bool checkSpecialKeyEvents(PolyKEY key);
 

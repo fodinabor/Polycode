@@ -39,7 +39,6 @@ THE SOFTWARE.
 	#include <EGL/egl.h>
 	#include <EGL/eglext.h>
 	#include <EGL/eglplatform.h>
-
 	#if defined(WINAPI_FAMILY)
 		#include <angle_windowsstore.h>
 	#endif
