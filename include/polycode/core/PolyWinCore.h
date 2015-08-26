@@ -179,6 +179,14 @@ public:
 		//	CoreInput *input;		
 	};
 
+	class _PolyExport PolycodeView : public PolycodeViewBase {
+	public:
+		PolycodeView(HINSTANCE hInstance, int nCmdShow, LPCTSTR windowTitle, bool resizable = false, bool showDebugConsole = false);
+		~PolycodeView();
+
+		HWND hwnd;
+	};
+
 	class _PolyExport Win32Core : public Core {
 		
 	public:
@@ -207,7 +215,6 @@ public:
 
 		void setVideoMode(int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, bool retinaSupport = true);
 		
-		//bool createRenderContext();
 		void initContext(int aaLevel);
 		void destroyContext();
 		void flushRenderContext();

@@ -95,7 +95,7 @@
     #if defined(_WINDOWS) && !defined(_MINGW)
         #include "polycode/core/PolyWinCore.h"
     #else
-		#if (WINAPI_FAMILY == WINAPI_FAMILY_APP)
+		#if (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP)
 			#include "polycode/core/PolyUWPCore.h"
 		#else
 			#include "polycode/core/PolySDLCore.h"

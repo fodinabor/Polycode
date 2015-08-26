@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\Polycode.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyBasicFileProvider.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyBezierCurve.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyBone.h" />
@@ -94,7 +95,6 @@
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyVector3.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyVector4.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyWinCore.h" />
-    <ClInclude Include="..\..\..\..\include\polycode\view\win\core\PolycodeView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\core\PolyBasicFileProvider.cpp" />
@@ -174,7 +174,6 @@
     <ClCompile Include="..\..\..\..\src\core\tinyxml.cpp" />
     <ClCompile Include="..\..\..\..\src\core\tinyxmlerror.cpp" />
     <ClCompile Include="..\..\..\..\src\core\tinyxmlparser.cpp" />
-    <ClCompile Include="..\..\..\..\src\view\win\core\PolycodeView.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EADE4EDC-C4DC-4BE7-B506-631C45DB5382}</ProjectGuid>
@@ -228,19 +227,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\..\..\lib\windows\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\..\..\lib\win32\x86;$(LibraryPath)</LibraryPath>
+    <TargetName>Polycored</TargetName>
+    <OutDir>$(SolutionDir)..\..\..\lib\win32\x86\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\..\..\lib\windows\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\..\..\lib\win32\x86;$(LibraryPath)</LibraryPath>
+    <TargetName>Polycore</TargetName>
+    <OutDir>$(SolutionDir)..\..\..\lib\win32\x86\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\..\..\lib\windows\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\..\..\lib\win32\x64;$(LibraryPath)</LibraryPath>
+    <TargetName>Polycored</TargetName>
+    <OutDir>$(SolutionDir)..\..\..\lib\win32\x64\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\..\..\lib\windows\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\..\..\lib\win32\x64;$(LibraryPath)</LibraryPath>
+    <TargetName>Polycore</TargetName>
+    <OutDir>$(SolutionDir)..\..\..\lib\win32\x64\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

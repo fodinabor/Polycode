@@ -28,7 +28,6 @@
 #include "polycode/modules/ui/PolyUIScrollContainer.h"
 #include "polycode/modules/ui/PolyUITextInput.h"
 #include "polycode/core/PolyInputEvent.h"
-
 namespace Polycode {
 
 	class CreateFolderWindow : public UIWindow {
