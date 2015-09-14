@@ -28,7 +28,13 @@
 #include "polycode/core/PolyInputEvent.h"
 #include "polycode/core/PolyRectangle.h"
 #ifdef GL_ON_WIN
-#include "polycode/core/PolyOpenGLGraphicsInterface.h"
+//#include "polycode/core/PolyOpenGLGraphicsInterface.h"
+
+//#include <GLES2/gl2.h>
+//#include <GLES2/gl2ext.h>
+//#include <EGL/egl.h>
+//#include <EGL/eglext.h>
+//#include <EGL/eglplatform.h>
 #endif
 
 #include <winsock2.h>
@@ -112,6 +118,9 @@ namespace Polycode {
 
 	class _PolyExport Win32Mutex : public CoreMutex {
 	public:
+		void lock();
+		void unlock();
+
 		HANDLE winMutex; 
 	};
 
@@ -219,14 +228,10 @@ public:
 		void destroyContext();
 		void flushRenderContext();
 
-		void getWglFunctionPointers();
-
 		void createThread(Threaded *target);
 
 		PolyKEY mapKey(LPARAM lParam, WPARAM wParam);
 
-		void lockMutex(CoreMutex *mutex);
-		void unlockMutex(CoreMutex *mutex);
 		CoreMutex *createMutex();
 
 		void checkEvents();
@@ -298,8 +303,11 @@ public:
 		bool resizable;
 
 		HDC hDC;
-		HGLRC hRC;
 		
+		void* mEglDisplay;
+		void* mEglContext;
+		void* mEglSurface;
+				
 		// frequency of the windows performance counter
 		double pcFreq;
 

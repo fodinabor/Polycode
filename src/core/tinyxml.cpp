@@ -773,7 +773,7 @@ void cf_fprintf(Polycode::CoreFile* cfile, const char *format, ...) {
     
     va_list args;
     va_start(args, format);
-    vsnprintf(str, 2048, format, args);
+    vsnprintf_s(str, sizeof(char), 2048, format, args);
     va_end(args);
     
     cfile->write(str, strlen(str), 1);

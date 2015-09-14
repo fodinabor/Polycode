@@ -39,7 +39,7 @@ THE SOFTWARE.
 	#include <EGL/egl.h>
 	#include <EGL/eglext.h>
 	#include <EGL/eglplatform.h>
-	#if defined(WINAPI_FAMILY)
+	#if WINAPI_FAMILY == WINAPI_FAMILY_PC_APP
 		#include <angle_windowsstore.h>
 	#endif
 #else	

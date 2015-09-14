@@ -28,6 +28,7 @@
 #include "polycode/core/PolyThreaded.h"
 #include "polycode/core/PolyBasicFileProvider.h"
 #include "polycode/core/PolyPhysFSFileProvider.h"
+#include "polycode/core/PolyOpenGLGraphicsInterface.h"
 
 #include <direct.h>
 #include <stdlib.h>
@@ -51,11 +52,7 @@
 #define MAPVK_VSC_TO_VK_EX 3
 #endif
 #else
-#ifdef GL_ON_WIN
-PFNWGLSWAPINTERVALEXTPROC       wglSwapIntervalEXT = NULL;
-PFNWGLGETSWAPINTERVALEXTPROC    wglGetSwapIntervalEXT = NULL;
-PFNWGLCHOOSEPIXELFORMATARBPROC	wglChoosePixelFormatARB = NULL;
-#endif
+//PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT;
 #endif
 
 using namespace Polycode;
@@ -116,8 +113,7 @@ Win32Core::Win32Core(PolycodeViewBase *view, int _xRes, int _yRes, bool fullScre
 	initTouch();
 
 	hDC = NULL;
-	hRC = NULL;
-
+	
 	this->aaLevel = 999;
 	
 	lastMouseX = -1;
@@ -129,14 +125,13 @@ Win32Core::Win32Core(PolycodeViewBase *view, int _xRes, int _yRes, bool fullScre
 	this->resizable = view->resizable;
 
 	renderer = new Renderer();
-#ifdef GL_ON_WIN
+
 	renderer->setGraphicsInterface(this, new OpenGLGraphicsInterface());
-#endif
 	services->setRenderer(renderer);
 
 	renderer->setBackingResolutionScale(scaleFactor, scaleFactor);
 
-	getWglFunctionPointers();
+	//eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
 
 	setVideoMode(xRes, yRes, fullScreen, vSync, aaLevel, anisotropyLevel);
 		
@@ -236,11 +231,11 @@ bool Win32Core::systemUpdate() {
 }
 
 void Win32Core::setVSync(bool vSyncVal) {
-	if(wglSwapIntervalEXT) {
+	if(eglSwapInterval) {
 		if(vSyncVal) {
-			wglSwapIntervalEXT(1);
+			eglSwapInterval((void*)monitorIndex, 1);
 		} else {
-			wglSwapIntervalEXT(0);
+			eglSwapInterval((void*) monitorIndex, 0);
 		}
 	}
 }
@@ -249,107 +244,49 @@ void Win32Core::setVideoMode(int xRes, int yRes, bool fullScreen, bool vSync, in
 	Core::setVideoMode(xRes, yRes, fullScreen, vSync, aaLevel, anisotropyLevel, retinaSupport);	
 }
 
-void Win32Core::getWglFunctionPointers() {
-
-	PIXELFORMATDESCRIPTOR pfd;
-	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	pfd.nVersion = 1;
-	pfd.dwFlags = PFD_DOUBLEBUFFER |
-		PFD_SUPPORT_OPENGL |
-		PFD_DRAW_TO_WINDOW;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 24;
-	pfd.cDepthBits = 16;
-	pfd.cAccumBlueBits = 8;
-	pfd.cAccumRedBits = 8;
-	pfd.cAccumGreenBits = 8;
-	pfd.cAccumAlphaBits = 8;
-	pfd.cAccumBits = 24;
-	pfd.iLayerType = PFD_MAIN_PLANE;
-
-	WNDCLASSEX wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-	wcex.lpfnWndProc = DefWindowProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = NULL;
-	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = L"FAKECONTEXTCLASS";
-	wcex.hIconSm = LoadIcon(hInstance, IDI_APPLICATION);
-
-	RegisterClassEx(&wcex);
-
-	HWND tempHWND = CreateWindowEx(WS_EX_APPWINDOW, L"FAKECONTEXTCLASS", L"FAKE", WS_OVERLAPPEDWINDOW | WS_MAXIMIZE | WS_CLIPCHILDREN, 0, 0, 0, 0, NULL, NULL, hInstance, NULL);
-	//CreateWindow(_T("FakeWindow"), _T("FAKE"), WS_OVERLAPPEDWINDOW | WS_MAXIMIZE | WS_CLIPCHILDREN, 0, 0, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-
-	HGLRC tempHRC;
-	unsigned int PixelFormat;
-	
-	HDC tempDC = GetDC(tempHWND);
-	PixelFormat = ChoosePixelFormat(tempDC, &pfd);
-	SetPixelFormat(tempDC, PixelFormat, &pfd);
-
-	tempHRC = wglCreateContext(tempDC);
-	wglMakeCurrent(tempDC, tempHRC);
-
-	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-	wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
-	wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
-
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(tempHRC);
-	DestroyWindow(tempHWND);
-
-}
-
 void Win32Core::initContext(int aaLevel) {
 
 	destroyContext();
 
 	int pixelFormat;
 	bool intializedAA = false;
-
-
+	EGLConfig config;
+	EGLint num_config;
+	
 	if (!(hDC = GetDC(hWnd))) {
 		Logger::log("Can't Create A GL Device Context.\n");
 		return;
 	}
 
-	if (aaLevel > 0) {
-		if (!wglChoosePixelFormatARB) {
-			Logger::log("Multisampling not supported!\n");
-		} else {
-
-			UINT numFormats;
-			float fAttributes[] = { 0, 0 };
-
-			int attributes[] = {
-				WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-				WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-				WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-				WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
-				WGL_COLOR_BITS_ARB, 24,
-				WGL_DEPTH_BITS_ARB, 16,
-				WGL_STENCIL_BITS_ARB, 8,
-				WGL_SAMPLE_BUFFERS_ARB, 1,
-				WGL_SAMPLES_ARB, aaLevel,
-				0
-			};
-
-			if (!wglChoosePixelFormatARB(hDC, attributes, fAttributes, 1, &pixelFormat, &numFormats)) {
-				Logger::log("Invalid pixel format chosen\n");
-
-			} else {
-				intializedAA = true;
-			}
-		}
+	if ((mEglContext = eglGetDisplay(hDC)) == EGL_NO_DISPLAY) {
+		Logger::log("Failed to get EGL display!\n");
+		return;
 	}
+
+	if (eglInitialize(mEglContext, NULL, NULL) == EGL_FALSE) {
+		Logger::log("Failed to initialize EGL!\n");
+		return;
+	}
+
+	if (aaLevel > 0) {
+		const EGLint configAttributes[] =
+		{
+			EGL_SAMPLE_BUFFERS, 1,
+			EGL_SAMPLES, aaLevel,
+			EGL_RED_SIZE, 24,
+			EGL_GREEN_SIZE, 24,
+			EGL_BLUE_SIZE, 24,
+			EGL_ALPHA_SIZE, 24,
+			EGL_DEPTH_SIZE, 16,
+			EGL_STENCIL_SIZE, 8,
+			EGL_NONE
+		};
+
+		eglChooseConfig(mEglDisplay, configAttributes, &config, 1, &num_config);
+	} else {
+		eglGetConfigs(mEglDisplay, &config, 1, &num_config);
+	}
+	
 
 	PIXELFORMATDESCRIPTOR pfd;
 
@@ -384,31 +321,32 @@ void Win32Core::initContext(int aaLevel) {
 		return;							// Return FALSE
 	}
 
-	if (!(hRC=wglCreateContext(hDC)))					// Are We Able To Get A Rendering Context?
+	if (!(mEglContext=eglCreateContext(mEglDisplay,config,EGL_NO_CONTEXT,NULL)))					// Are We Able To Get A Rendering Context?
 	{
 		Logger::log("Can't Create A GL Rendering Context.\n");
 		return;							// Return FALSE
 	}
 
-	if(!wglMakeCurrent(hDC,hRC))						// Try To Activate The Rendering Context
+	if(!(mEglSurface=eglCreateWindowSurface(mEglDisplay,config,hWnd,NULL)))
+
+	if(!eglMakeCurrent(hDC,mEglSurface,mEglSurface,mEglContext))						// Try To Activate The Rendering Context
 	{
 		Logger::log("Can't Activate The GL Rendering Context.\n");
 		return;							// Return FALSE
 	}
 
-	if (intializedAA) {
-		glEnable(GL_MULTISAMPLE_ARB); 
-	}
+	//if (intializedAA) {
+	//	glEnable(GL_MULTISAMPLE_ARB); 
+	//}
 }
 
 void Win32Core::destroyContext() {
 
-	if(hDC == NULL)
+	if(mEglDisplay == NULL)
 		return;
 
-	wglMakeCurrent (hDC, 0);
-	wglDeleteContext(hRC);
-	hRC = 0;
+	eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	eglDestroyContext(mEglDisplay,mEglContext);
 	ReleaseDC (hWnd, hDC);
 	hDC = 0;
 	if (isFullScreen)
@@ -660,25 +598,25 @@ PolyKEY Win32Core::mapKey(LPARAM lParam, WPARAM wParam) {
 }
 
 void Win32Core::handleKeyDown(LPARAM lParam, WPARAM wParam, wchar_t unicodeChar) {
-	lockMutex(eventMutex);
+	eventMutex->lock();
 	Win32Event newEvent;
 	newEvent.eventGroup = Win32Event::INPUT_EVENT;
 	newEvent.eventCode = InputEvent::EVENT_KEYDOWN;
 	newEvent.keyCode = mapKey(lParam, wParam);
 	newEvent.unicodeChar = unicodeChar;
 	win32Events.push_back(newEvent);
-	unlockMutex(eventMutex);
+	eventMutex->unlock();
 }
 
 void Win32Core::handleKeyUp(LPARAM lParam, WPARAM wParam) {
-	lockMutex(eventMutex);
+	eventMutex->lock();
 	Win32Event newEvent;
 	newEvent.eventGroup = Win32Event::INPUT_EVENT;
 	newEvent.eventCode = InputEvent::EVENT_KEYUP;
 	newEvent.keyCode = mapKey(lParam, wParam);
 	newEvent.unicodeChar = 0;
 	win32Events.push_back(newEvent);
-	unlockMutex(eventMutex);
+	eventMutex->unlock();
 }
 
 #ifndef NO_TOUCH_API
@@ -690,7 +628,7 @@ void Win32Core::handleTouchEvent(LPARAM lParam, WPARAM wParam) {
 			return;
 		}
 
-		lockMutex(eventMutex);
+		eventMutex->lock();
 
 		int iNumContacts = LOWORD(wParam);
 		HTOUCHINPUT hInput = (HTOUCHINPUT)lParam;
@@ -743,14 +681,14 @@ void Win32Core::handleTouchEvent(LPARAM lParam, WPARAM wParam) {
 				}
 			}
 		}
-		unlockMutex(eventMutex);
+		eventMutex->unlock();
 	}
 #endif
 
 #ifndef NO_PEN_API
 void Win32Core::handlePointerUpdate(LPARAM lParam, WPARAM wParam) {
 
-	lockMutex(eventMutex);
+	eventMutex->lock();
 
 	POINTER_PEN_INFO    penInfo;
 	POINTER_INFO        pointerInfo;
@@ -812,23 +750,23 @@ void Win32Core::handlePointerUpdate(LPARAM lParam, WPARAM wParam) {
 		win32Events.push_back(newEvent);
 	}
 
-	unlockMutex(eventMutex);
+	eventMutex->unlock();
 }
 #endif
 
 void Win32Core::handleMouseMove(LPARAM lParam, WPARAM wParam) {
-	lockMutex(eventMutex);
+	eventMutex->lock();
 	Win32Event newEvent;
 	newEvent.eventGroup = Win32Event::INPUT_EVENT;
 	newEvent.eventCode = InputEvent::EVENT_MOUSEMOVE;
 	newEvent.mouseX = GET_X_LPARAM(lParam);
 	newEvent.mouseY = GET_Y_LPARAM(lParam);	
 	win32Events.push_back(newEvent);
-	unlockMutex(eventMutex);
+	eventMutex->unlock();
 }
 
 void Win32Core::handleMouseWheel(LPARAM lParam, WPARAM wParam) {
-	lockMutex(eventMutex);
+	eventMutex->lock();
 	Win32Event newEvent;
 	newEvent.eventGroup = Win32Event::INPUT_EVENT;
 	newEvent.mouseX = GET_X_LPARAM(lParam);
@@ -839,11 +777,10 @@ void Win32Core::handleMouseWheel(LPARAM lParam, WPARAM wParam) {
 	else
 		newEvent.eventCode = InputEvent::EVENT_MOUSEWHEEL_UP;
 	win32Events.push_back(newEvent);
-	unlockMutex(eventMutex);
+	eventMutex->unlock();
 }
 
 void Win32Core::handleMouseDown(int mouseCode,LPARAM lParam, WPARAM wParam) {
-	lockMutex(eventMutex);
 	Win32Event newEvent;
 	newEvent.eventGroup = Win32Event::INPUT_EVENT;
 	newEvent.mouseX = GET_X_LPARAM(lParam);
@@ -851,11 +788,11 @@ void Win32Core::handleMouseDown(int mouseCode,LPARAM lParam, WPARAM wParam) {
 	newEvent.eventCode = InputEvent::EVENT_MOUSEDOWN;
 	newEvent.mouseButton = mouseCode;
 	win32Events.push_back(newEvent);
-	unlockMutex(eventMutex);
+	eventMutex->unlock();
 }
 
 void Win32Core::handleMouseUp(int mouseCode,LPARAM lParam, WPARAM wParam) {
-	lockMutex(eventMutex);
+	eventMutex->lock();
 	Win32Event newEvent;
 	newEvent.eventGroup = Win32Event::INPUT_EVENT;
 	newEvent.mouseX = GET_X_LPARAM(lParam);
@@ -863,7 +800,7 @@ void Win32Core::handleMouseUp(int mouseCode,LPARAM lParam, WPARAM wParam) {
 	newEvent.eventCode = InputEvent::EVENT_MOUSEUP;
 	newEvent.mouseButton = mouseCode;
 	win32Events.push_back(newEvent);
-	unlockMutex(eventMutex);
+	eventMutex->unlock();
 }
 
 bool Win32Core::checkSpecialKeyEvents(PolyKEY key) {
@@ -902,7 +839,7 @@ bool Win32Core::checkSpecialKeyEvents(PolyKEY key) {
 }
 
 void Win32Core::checkEvents() {
-	lockMutex(eventMutex);
+	eventMutex->lock();
 	Win32Event event;
 	for(int i=0; i < win32Events.size(); i++) {
 		event = win32Events[i];
@@ -949,7 +886,7 @@ void Win32Core::checkEvents() {
 		}
 	}
 	win32Events.clear();	
-	unlockMutex(eventMutex);		
+	eventMutex->unlock();
 }
 
 void Win32Core::handleAxisChange(GamepadDeviceEntry * device, int axisIndex, DWORD value) {
@@ -1208,14 +1145,6 @@ void Win32Core::createThread(Threaded *target) {
 	Core::createThread(target);
 	DWORD dwGenericThread; 
 	HANDLE handle = CreateThread(NULL,0,Win32LaunchThread,target,0,&dwGenericThread);
-}
-
-void Win32Core::lockMutex(CoreMutex *mutex) {	
-	WaitForSingleObject(((Win32Mutex*)mutex)->winMutex,INFINITE);
-}
-
-void Win32Core::unlockMutex(CoreMutex *mutex) {
-	ReleaseMutex(((Win32Mutex*)mutex)->winMutex);
 }
 
 void Win32Core::platformSleep(int msecs) {
@@ -1784,4 +1713,12 @@ PolycodeView::PolycodeView(HINSTANCE hInstance, int nCmdShow, LPCTSTR windowTitl
 
 PolycodeView::~PolycodeView() {
 
+}
+
+void Polycode::Win32Mutex::lock() {
+	WaitForSingleObject(winMutex, INFINITE);
+}
+
+void Polycode::Win32Mutex::unlock() {
+	ReleaseMutex(winMutex);
 }
