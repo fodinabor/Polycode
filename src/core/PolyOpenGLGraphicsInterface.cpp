@@ -28,8 +28,6 @@
 using namespace Polycode;
 
 OpenGLGraphicsInterface::OpenGLGraphicsInterface() {
-
-OpenGLGraphicsInterface::OpenGLGraphicsInterface() {
     lineSmooth = false;
 }
 

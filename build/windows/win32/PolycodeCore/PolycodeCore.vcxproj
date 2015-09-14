@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\lodepng.h" />
     <ClInclude Include="..\..\..\..\include\Polycode.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyBasicFileProvider.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyBezierCurve.h" />
@@ -97,6 +98,7 @@
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyWinCore.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\core\lodepng.cpp" />
     <ClCompile Include="..\..\..\..\src\core\PolyBasicFileProvider.cpp" />
     <ClCompile Include="..\..\..\..\src\core\PolyBezierCurve.cpp" />
     <ClCompile Include="..\..\..\..\src\core\PolyBone.cpp" />
@@ -255,6 +257,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WIN32;_WINDOWS;_UNICODE;UNICODE;%(PreprocessorDefinitions);GL_ON_WIN</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
