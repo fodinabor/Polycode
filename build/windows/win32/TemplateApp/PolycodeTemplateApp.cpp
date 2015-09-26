@@ -1,27 +1,25 @@
 #include "PolycodeTemplateApp.h"
 
 PolycodeTemplateApp::PolycodeTemplateApp(PolycodeView *view) {
-	core = new Win32Core(view, 640, 480, false, false, 0, 0, 60);
+	core = new Win32Core(view, 1280, 720, false, false, 0, 0, 60);
 
 	core->addFileSource("archive", "default.pak");
-	Logger::log("load one");
 	ResourcePool *globalPool = Services()->getResourceManager()->getGlobalPool();
-	Logger::log("load two");
 	globalPool->loadResourcesFromFolder("default", true);
 
-	// Write your code here
+	// Write your code here!
 
-	Logger::log("loaded");
-
-	Scene *scene = new Scene(Scene::SCENE_2D);
+	Scene *scene = new Scene(Scene::SCENE_2D_TOPLEFT);
 	scene->useClearColor = true;
 
-	ScenePrimitive *test = new ScenePrimitive(ScenePrimitive::TYPE_VPLANE, 0.5, 0.5);
+	ScenePrimitive *test = new ScenePrimitive(ScenePrimitive::TYPE_CIRCLE, 500, 500);
 	test->setMaterialByName("Unlit");
-	
+	//test->getShaderPass(0).shaderBinding->loadTextureForParam("diffuse", "main_icon.png");
+	test->setColor(1, 1, 0, 1);
 	scene->addChild(test);
 
-	Logger::log("finished");
+	SceneLabel *testLabel = new SceneLabel("Test!", 32, "sans", Label::ANTIALIAS_FULL, 0.2);
+	scene->addChild(testLabel);
 }
 PolycodeTemplateApp::~PolycodeTemplateApp() {
     

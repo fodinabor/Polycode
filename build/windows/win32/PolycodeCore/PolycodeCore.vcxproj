@@ -96,6 +96,7 @@
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyVector3.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyVector4.h" />
     <ClInclude Include="..\..\..\..\include\polycode\core\PolyWinCore.h" />
+    <ClInclude Include="..\..\..\..\include\polycode\view\win\core\PolycodeView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\core\lodepng.cpp" />
@@ -176,6 +177,7 @@
     <ClCompile Include="..\..\..\..\src\core\tinyxml.cpp" />
     <ClCompile Include="..\..\..\..\src\core\tinyxmlerror.cpp" />
     <ClCompile Include="..\..\..\..\src\core\tinyxmlparser.cpp" />
+    <ClCompile Include="..\..\..\..\src\view\win\core\PolycodeView.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EADE4EDC-C4DC-4BE7-B506-631C45DB5382}</ProjectGuid>

@@ -579,13 +579,13 @@ void OpenGLGraphicsInterface::createShader(Shader *shader) {
     total = -1;
     glGetProgramiv( shaderID, GL_ACTIVE_ATTRIBUTES, &total );
     
-    for(GLuint i=0; i < total; i++)  {
+    for(int i=0; i < total; i++)  {
         
         int name_len=-1, num=-1;
         GLenum type = GL_ZERO;
         char name[128];
         
-        glGetActiveAttrib(shaderID, i, sizeof(name)-1, &name_len, &num, &type, name);
+        glGetActiveAttrib(shaderID, (GLuint)i, sizeof(name)-1, &name_len, &num, &type, name);
         name[name_len] = 0;
 
         int attribLocation = glGetAttribLocation(shaderID, name);

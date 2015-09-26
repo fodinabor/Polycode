@@ -33,8 +33,6 @@ THE SOFTWARE.
 	#include <OpenGL/glext.h>
 	#include <OpenGL/glu.h>
 #elif PLATFORM == PLATFORM_WINDOWS
-	#include <GLES2/gl2.h>
-	#include <GLES2/gl2ext.h>
 	#include <EGL/egl.h>
 	#include <EGL/eglext.h>
 	#include <EGL/eglplatform.h>
@@ -42,7 +40,12 @@ THE SOFTWARE.
 	#define STRICT_OPENGLES2
 
 	#if WINAPI_FAMILY == WINAPI_FAMILY_PC_APP
+		#include <GLES2/gl2.h>
+		#include <GLES2/gl2ext.h>
+
 		#include <angle_windowsstore.h>
+	#else
+		#include <angle_gl.h>
 	#endif
 #else	
 	#include <GL/gl.h>

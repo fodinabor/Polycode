@@ -1,4 +1,5 @@
 #include <Polycode.h>
+#include <polycode/view/win/core/PolycodeView.h>
 #include "PolycodeTemplateApp.h"
 #include "windows.h"
 
@@ -11,6 +12,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	MSG Msg;
 	do {
+		if (view->changed) {
+			view->handleChange();
+		}
+
 		while (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);

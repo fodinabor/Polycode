@@ -69,6 +69,12 @@ void RenderThread::runThread() {
     }
 }
 
+void RenderThread::killThread() {
+	threadRunning = false;
+	Services()->getCore()->lockMutex(jobQueueMutex);
+	Services()->getCore()->unlockMutex(jobQueueMutex);
+}
+
 ShaderBinding *RenderThread::getShaderBinding() {
     return rendererShaderBinding;
 }

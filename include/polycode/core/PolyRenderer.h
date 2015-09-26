@@ -106,6 +106,7 @@ namespace Polycode {
             RenderThread();
              void setGraphicsInterface(Core *core, GraphicsInterface *graphicsInterface);
             virtual void runThread();
+			virtual void killThread();
             void enqueueJob(int jobType, void *data);
             void processJob(const RendererThreadJob &job);
         
@@ -123,7 +124,7 @@ namespace Polycode {
             static const int JOB_CREATE_SHADER = 5;
             static const int JOB_BEGIN_FRAME = 6;
             static const int JOB_CREATE_VERTEX_BUFFERS = 7;
-        
+			
         protected:
         
             unsigned int frameStart;
@@ -131,7 +132,7 @@ namespace Polycode {
             RenderThreadDebugInfo currentDebugFrameInfo;
         
             Core *core;
-            CoreMutex *jobQueueMutex;
+			CoreMutex *jobQueueMutex;
             std::queue<RendererThreadJob> jobQueue;
             GraphicsInterface *graphicsInterface;
         

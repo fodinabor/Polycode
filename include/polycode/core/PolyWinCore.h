@@ -188,19 +188,13 @@ public:
 		//	CoreInput *input;		
 	};
 
-	class _PolyExport PolycodeView : public PolycodeViewBase {
-	public:
-		PolycodeView(HINSTANCE hInstance, int nCmdShow, LPCTSTR windowTitle, bool resizable = false, bool showDebugConsole = false);
-		~PolycodeView();
-
-		HWND hwnd;
-	};
+	class PolycodeView;
 
 	class _PolyExport Win32Core : public Core {
 		
 	public:
 		
-		Win32Core(PolycodeViewBase *view, int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate,  int monitorIndex = -1, bool retinaSupport = false);
+		Win32Core(PolycodeView *view, int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, int frameRate,  int monitorIndex = -1, bool retinaSupport = false);
 		~Win32Core();
 
 		void enableMouse(bool newval);
@@ -223,9 +217,11 @@ public:
 		bool isMultiTouchEnabled() { return hasMultiTouch; }
 
 		void setVideoMode(int xRes, int yRes, bool fullScreen, bool vSync, int aaLevel, int anisotropyLevel, bool retinaSupport = true);
-		
-		void initContext(int aaLevel);
-		void destroyContext();
+		void setVideoMode(VideoModeChangeInfo* modeChangeInfo);
+		//void createWindow();
+
+		//void initContext(int aaLevel);
+		//void destroyContext();
 		void flushRenderContext();
 
 		void createThread(Threaded *target);
@@ -249,6 +245,8 @@ public:
 		void initGamepad();
 		void shutdownGamepad();
 		void Gamepad_processEvents();
+
+		void Shutdown();
 
 		void initTouch();
 
@@ -302,11 +300,8 @@ public:
 		bool retinaSupport;
 		bool resizable;
 
-		HDC hDC;
-		
-		void* mEglDisplay;
-		void* mEglContext;
-		void* mEglSurface;
+		//HDC hDC;
+		PolycodeView* view;
 				
 		// frequency of the windows performance counter
 		double pcFreq;
