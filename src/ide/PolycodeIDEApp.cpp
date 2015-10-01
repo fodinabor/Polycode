@@ -672,7 +672,7 @@ void PolycodeIDEApp::openDocs() {
 #endif
 }
 
-void PolycodeIDEApp::openFileInProject(PolycodeProject *project, String filePath) {
+bool PolycodeIDEApp::openFileInProject(PolycodeProject *project, String filePath) {
 	OSFileEntry fileEntry = OSFileEntry(project->getRootFolder()+"/"+filePath, OSFileEntry::TYPE_FILE);	
     Polycode::CoreFile *file = Services()->getCore()->openFile(project->getRootFolder()+"/"+filePath,"r");
 	
@@ -687,9 +687,10 @@ void PolycodeIDEApp::openFileInProject(PolycodeProject *project, String filePath
 			openFile(fileEntry);							
 		} else {
 			PolycodeConsole::print("File not available.\n");
+			return false;
 		}
 	}
-
+	return true;
 }
 
 void PolycodeIDEApp::openFile(OSFileEntry file) {
@@ -819,16 +820,16 @@ void PolycodeIDEApp::handleEvent(Event *event) {
 	if(event->getDispatcher() == frame->console->backtraceWindow) {
 		if(event->getEventType() == "BackTraceEvent" && event->getEventCode() == BackTraceEvent::EVENT_BACKTRACE_SELECTED) {
 			BackTraceEvent *btEvent = (BackTraceEvent*) event;
-			openFileInProject(btEvent->project, btEvent->fileName);
-			
-			PolycodeEditor *editor = editorManager->getCurrentEditor();
-			if(editor) {
-				if(editor->getEditorType() == "PolycodeTextEditor") {
-					PolycodeTextEditor *textEditor = (PolycodeTextEditor*) editor;
-					textEditor->highlightLine(btEvent->lineNumber);
+			if (openFileInProject(btEvent->project, btEvent->fileName)) {
+
+				PolycodeEditor *editor = editorManager->getCurrentEditor();
+				if (editor) {
+					if (editor->getEditorType() == "PolycodeTextEditor") {
+						PolycodeTextEditor *textEditor = (PolycodeTextEditor*)editor;
+						textEditor->highlightLine(btEvent->lineNumber);
+					}
 				}
-				
-			}	
+			}
 		}
 	}
 
