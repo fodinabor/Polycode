@@ -81,5 +81,8 @@ namespace Polycode {
 		uint32_t flags;
 		bool resizableWindow;
 		
+		int lastMouseX;
+		int lastMouseY;
+		
 	};
 }
