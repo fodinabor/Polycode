@@ -122,6 +122,9 @@ SDLCore::SDLCore(PolycodeView *view, int _xRes, int _yRes, bool fullScreen, bool
 		input->addJoystick(i);
 	}
 
+	lastMouseX = 0;
+	lastMouseY = 0;
+	
 #ifdef USE_X11
 	// Start listening to clipboard events.
 	// (Yes on X11 you need to actively listen to
@@ -400,7 +403,7 @@ bool SDLCore::systemUpdate() {
 					}
 				break;
 				case SDL_MOUSEMOTION:
-					input->setDeltaPosition(event.motion.xrel, event.motion.yrel);					
+					input->setDeltaPosition(lastMouseX- event.motion.x, lastMouseY-event.motion.y);					
 					input->setMousePosition(event.motion.x, event.motion.y, getTicks());
 				break;
 				default:
@@ -418,6 +421,8 @@ void SDLCore::setCursor(int cursorType) {
 
 void SDLCore::warpCursor(int x, int y) {
 	SDL_WarpMouse(x, y);
+	lastMouseX = x;
+	lastMouseY = y;
 }
 
 void SDLCore::lockMutex(CoreMutex *mutex) {
