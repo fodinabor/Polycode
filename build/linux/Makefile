@@ -1,6 +1,7 @@
 CC=g++
 SRCDIR=../../src
 ASSETDIR=../../assets
+SCRIPTDIR=../../scripts
 
 .SUFFIXES: .io .do .dio
 
@@ -97,6 +98,10 @@ studio_debug: core_debug ui_debug $(DOBJSTUDIO)
 	@echo "\033[1;32mCopy Assets to: \033[0m[\033[1;33mStudio\033[0m]"
 	@cp -r $(ASSETDIR)/ide/* Studio
 	@cp $(ASSETDIR)/default/default.pak Studio
+
+player: core ui 
+	@echo "\033[1;32mCreating LUA Bindings \033[0m"
+	@cd $(SCRIPTDIR)/ && make all
 
 clean:
 	rm -f $(OBJCORE) $(OBJUI) $(OBJTEMPLATE) $(OBJSTUDIO) $(DOBJCORE) $(DOBJUI) $(DOBJTEMPLATE) $(DOBJSTUDIO) $(LIBDIR)/libPolycore.a Studio/Polycode $(LIBDIR)/libPolycodeUI.a TemplateApp/PolycodeTemplate $(LIBDIR)/libPolycored.a Studio/Polycoded $(LIBDIR)/libPolycodeUId.a TemplateApp/PolycodeTemplated

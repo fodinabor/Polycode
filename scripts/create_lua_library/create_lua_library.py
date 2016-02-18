@@ -117,7 +117,7 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 		if os.path.isdir(fileName):
 			continue
 		head, tail = os.path.split(fileName)
-		ignore = ["PolyTween", "PolyTweenManager", "PolyGLSLProgram", "PolyGLSLShader", "PolyGLSLShaderModule", "PolyWinCore", "PolyCocoaCore", "PolyAGLCore", "PolySDLCore", "Poly_iPhone", "PolyGLES1Renderer", "PolyGLRenderer", "tinyxml", "tinystr", "OpenGLCubemap", "PolyiPhoneCore", "PolyGLES1Texture", "PolyGLTexture", "PolyGLVertexBuffer", "PolyThreaded", "PolyGLHeaders", "GLee", "PolyPeer", "PolySocket", "PolyClient", "PolyServer", "PolyServerWorld", "OSFILE", "OSFileEntry", "OSBasics", "PolyLogger", "PolyFontGlyphSheet"]
+		ignore = ["PolyTween", "PolyTweenManager", "PolyWinCore", "PolyCocoaCore", "PolyAGLCore", "PolySDLCore", "PolyRPICore", "PolyIOSCore", "PolyUWPCore", "tinyxml", "tinystr", "PolyThreaded", "PolyPeer", "PolySocket", "PolyClient", "PolyServer", "PolyServerWorld", "PolyLogger", "PolyFontGlyphSheet", "PolyXAudio2AudioInterface"]
 		if tail.split(".")[1] == "h" and tail.split(".")[0] not in ignore:
 			filteredFiles.append(fileName)
 			wrappersHeaderOut += "#include \"%s\"\n" % (tail)
@@ -821,7 +821,7 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 	fout.write(cppRegisterHeaderOut)
 
 	if luaDocPath is None:
-		luaDocPath = "../../../Documentation/Lua/xml"
+		luaDocPath = "../docs/lua"
 	if luaDocPath != "-":
 		fout = open("%s/%s.xml" % (luaDocPath, prefix), "w")
 		fout.write(luaDocOut)
