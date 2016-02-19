@@ -74,9 +74,9 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 	luaIndexOut = "" # Def: Global Lua everything-gets-required-from-this-file file
 	
 	# Header boilerplate for wrappersHeaderOut and cppRegisterOut
-	cppRegisterOut += "#include \"%sLUA.h\"\n" % (prefix)
-	cppRegisterOut += "#include \"%sLUAWrappers.h\"\n" % (prefix)
-	cppRegisterOut += "#include \"PolyCoreServices.h\"\n\n"
+	cppRegisterOut += "#include \"%s/%sLUA.h\"\n" % (includePath, prefix)
+	cppRegisterOut += "#include \"%s/%sLUAWrappers.h\"\n" % (includePath, prefix)
+	cppRegisterOut += "#include \"polycode/core/PolyCoreServices.h\"\n\n"
 	cppRegisterOut += "using namespace Polycode;\n\n"
 	cppRegisterOut += "int luaopen_%s(lua_State *L) {\n" % (prefix)
 
@@ -89,9 +89,9 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 
 	wrappersHeaderOut += "extern \"C\" {\n\n"
 	wrappersHeaderOut += "#include <stdio.h>\n"
-	wrappersHeaderOut += "#include \"lua.h\"\n"
-	wrappersHeaderOut += "#include \"lualib.h\"\n"
-	wrappersHeaderOut += "#include \"lauxlib.h\"\n"
+	wrappersHeaderOut += "#include \"lua5.1/lua.h\"\n"
+	wrappersHeaderOut += "#include \"lua5.1/lualib.h\"\n"
+	wrappersHeaderOut += "#include \"lua5.1/lauxlib.h\"\n"
 	wrappersHeaderOut += "#undef near\n"
 	wrappersHeaderOut += "#undef far\n"
 	wrappersHeaderOut += "} // extern \"C\" \n\n"
@@ -120,7 +120,7 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 		ignore = ["PolyTween", "PolyTweenManager", "PolyWinCore", "PolyCocoaCore", "PolyAGLCore", "PolySDLCore", "PolyRPICore", "PolyIOSCore", "PolyUWPCore", "tinyxml", "tinystr", "PolyThreaded", "PolyPeer", "PolySocket", "PolyClient", "PolyServer", "PolyServerWorld", "PolyLogger", "PolyFontGlyphSheet", "PolyXAudio2AudioInterface"]
 		if tail.split(".")[1] == "h" and tail.split(".")[0] not in ignore:
 			filteredFiles.append(fileName)
-			wrappersHeaderOut += "#include \"%s\"\n" % (tail)
+			wrappersHeaderOut += "#include \"%s/%s\"\n" % (head, tail)
 
 	wrappersHeaderOut += "\nusing namespace std;\n\n"
 	wrappersHeaderOut += "\nnamespace Polycode {\n\n"
@@ -170,7 +170,7 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 			f = open(fileName) # Def: Input file handle
 			contents = f.read().replace("_PolyExport", "") # Def: Input file contents, strip out "_PolyExport"
 			cppHeader = CppHeaderParser.CppHeader(contents, "string") # Def: Input file contents, parsed structure
-			ignore_classes = ["PolycodeShaderModule", "Object", "Threaded", "OpenGLCubemap", "PolyBase", "Matrix4::union "]
+			ignore_classes = ["PolycodeShaderModule", "Object", "Threaded", "OpenGLCubemap", "PolyBase", "Matrix4::union ", "CoreFileProvider", "CoreFile", "ResourceLoader", "GraphicsInterface"]
 
 			# Iterate, check each class in this file.
 			for ckey in cppHeader.classes: 
@@ -806,9 +806,9 @@ def createLUABindings(inputPath, prefix, mainInclude, libSmallName, libName, api
 	cppRegisterHeaderOut += "#include <%s>\n" % (mainInclude)
 	cppRegisterHeaderOut += "extern \"C\" {\n"
 	cppRegisterHeaderOut += "#include <stdio.h>\n"
-	cppRegisterHeaderOut += "#include \"lua.h\"\n"
-	cppRegisterHeaderOut += "#include \"lualib.h\"\n"
-	cppRegisterHeaderOut += "#include \"lauxlib.h\"\n"
+	cppRegisterHeaderOut += "#include \"lua5.1/lua.h\"\n"
+	cppRegisterHeaderOut += "#include \"lua5.1/lualib.h\"\n"
+	cppRegisterHeaderOut += "#include \"lua5.1/lauxlib.h\"\n"
 	cppRegisterHeaderOut += "int _PolyExport luaopen_%s(lua_State *L);\n" % (prefix)
 	cppRegisterHeaderOut += "}\n"
 	

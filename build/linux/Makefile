@@ -2,6 +2,7 @@ CC=g++
 SRCDIR=../../src
 ASSETDIR=../../assets
 SCRIPTDIR=../../scripts
+APIDIR=../../scripts/lua/
 
 .SUFFIXES: .io .do .dio
 
@@ -21,15 +22,23 @@ SRCSTUDIO=Studio/main.cpp $(SRCDIR)/ide/EditorGrid.cpp $(SRCDIR)/ide/EntityEdito
 OBJSTUDIO=$(SRCSTUDIO:.cpp=.io)
 DOBJSTUDIO=$(SRCSTUDIO:.cpp=.dio)
 
+SRCPLAYER=$(SRCDIR)/player/PolycodeLinuxPlayer.cpp $(SRCDIR)/player/PolycodePlayer.cpp mainPlayer.cpp
+OBJPLAYER=$(SRCPLAYER:.cpp=.o)
+DOBJPLAYER=$(SRCPLAYER:.cpp=.do)
+
 CFLAGS=-I../../include
 CFLAGSSTUDIO=$(CFLAGS) -DUSE_POLYCODEUI_FILE_DIALOGS -DUSE_POLYCODEUI_MENUBAR
 
 LIBDIR=../../lib/linux
 
 DEBUGFLAGS=-g -DDEBUG
+OPTFLAGS=-O2
 
 LDFLAGSTEMPLATE=-L$(LIBDIR) -lPolycore -lfreetype -lpng -lphysfs -lvorbisfile -lvorbis -logg -lz -lSDL -lGLEW -lGL
 LDFLAGSSTUDIO=-L$(LIBDIR) -lPolycore -lPolycodeUI -lfreetype -lpng -lphysfs -lvorbisfile -lvorbis -logg -lz -lSDL -lGLEW -lGL
+LDFLAGSPLAYER=-L$(LIBDIR) $(OPTFLAGS) -pthread -lrt -lPolycore -lPolycodeUI -lfreetype -lpng -lphysfs -lvorbisfile -lvorbis -logg -lportaudio -lasound -ljack -lz -llua5.1 -ldl -lSDL -lGLEW -lGL
+DLDFLAGSPLAYER=-L$(LIBDIR) -pthread -lrt -lPolycored -lPolycodeUId -lfreetype -lpng -lphysfs -lvorbisfile -lvorbis -logg -lportaudio -lasound -ljack -lz -llua5.1 -ldl -lSDL -lGLEW -lGL
+
 
 default: setup core
 
@@ -40,6 +49,7 @@ debug: setup core_debug ui_debug studio_debug
 setup:
 	@mkdir -p $(LIBDIR)
 	@mkdir -p Studio
+	@mkdir -p ../standalone
 
 .cpp.o:
 	@echo "\033[1;32mBuilding \033[0m[\033[1;33m$<\033[0m]"
@@ -100,8 +110,18 @@ studio_debug: core_debug ui_debug $(DOBJSTUDIO)
 	@cp $(ASSETDIR)/default/default.pak Studio
 
 player: core ui 
+player: core ui $(OBJPLAYER)
 	@echo "\033[1;32mCreating LUA Bindings \033[0m"
 	@cd $(SCRIPTDIR)/ && make all
+	@echo "\033[1;32mLinking \033[0m[\033[1;33m../standalone/Player/PolycodePlayer\033[0m]"
+	@$(CC) -o ../standalone/Player/PolycodePlayer $(OBJPLAYER) $(SRCDIR)/lua/core/PolycodeLUA.o $(SRCDIR)/lua/ui/UILUA.o $(LDFLAGSPLAYER)
+	@cp $(ASSETDIR)/default/default.pak $(ASSETDIR)/default/hdr.pak $(APIDIR)/core/API/api.pak $(APIDIR)/ui/API/UI.pak ../standalone/Player/
+
+player_debug: core_debug ui_debug $(DOBJPLAYER)
+	@echo "\033[1;32mCreating LUA Bindings \033[0m"
+	@cd $(SCRIPTDIR)/ && make all
+	@echo "\033[1;32mLinking \033[0m[\033[1;33m../standalone/Player/PolycodePlayer\033[0m]"
+	@$(CC) -o ../standalone/Player/PolycodePlayer $(DOBJPLAYER) $(SRCDIR)/lua/core/PolycodeLUA.o $(SRCDIR)/lua/ui/UILUA.o $(DLDFLAGSPLAYER)
 
 clean:
 	rm -f $(OBJCORE) $(OBJUI) $(OBJTEMPLATE) $(OBJSTUDIO) $(DOBJCORE) $(DOBJUI) $(DOBJTEMPLATE) $(DOBJSTUDIO) $(LIBDIR)/libPolycore.a Studio/Polycode $(LIBDIR)/libPolycodeUI.a TemplateApp/PolycodeTemplate $(LIBDIR)/libPolycored.a Studio/Polycoded $(LIBDIR)/libPolycodeUId.a TemplateApp/PolycodeTemplated
