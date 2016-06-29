@@ -2,8 +2,14 @@ language: cpp
 
 addons:
   apt:
+    sources:
+    - ubuntu-toolchain-r-test
     packages:
-    - libsdl1.2-dev
+    - libsdl2-dev
     - python-ply
+    - gcc-4.8
+    - g++-4.8
 
-script: cd build/linux/ && make all
+script: 
+  - cd scripts/create_bindings/ && python create_bindings.py
+  - cd build/linux/ && make all
