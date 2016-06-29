@@ -8,7 +8,7 @@ addons:
     packages:
     - libsdl2-dev
     - python-ply
-	
+
 script: 
   - cd scripts/create_bindings/ && python create_bindings.py
   - cd build/linux/ && make all
