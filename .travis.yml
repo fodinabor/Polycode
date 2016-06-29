@@ -1,15 +1,14 @@
 language: cpp
 
+sudo: required
+dist: trusty
+
 addons:
   apt:
-    sources:
-    - ubuntu-toolchain-r-test
     packages:
     - libsdl2-dev
     - python-ply
-    - gcc-4.8
-    - g++-4.8
-
+	
 script: 
   - cd scripts/create_bindings/ && python create_bindings.py
   - cd build/linux/ && make all
