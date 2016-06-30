@@ -877,6 +877,14 @@ void Win32Core::handleTextInput(LPARAM lParam, WPARAM wParam) {
 	unlockMutex(eventMutex);
 }
 
+void Win32Core::handleFocusChange(bool gain) {
+	if (gain) {
+		gainFocus();
+	} else {
+		loseFocus();
+	}
+}
+
 bool Win32Core::checkSpecialKeyEvents(PolyKEY key) {
 	
 	if(key == KEY_a && (input->getKeyState(KEY_LCTRL) || input->getKeyState(KEY_RCTRL))) {

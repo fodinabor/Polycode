@@ -206,7 +206,7 @@ public:
 		void handleTouchEvent(LPARAM lParam, WPARAM wParam);
 		void handlePointerUpdate(LPARAM lParam, WPARAM wParam);
 		void handleTextInput(LPARAM lParam, WPARAM wParam);
-
+		void handleFocusChange(bool gain);
 		void handleVideoModeChange(VideoModeChangeInfo *modeInfo);
 
 		bool isMultiTouchEnabled() { return hasMultiTouch; }
