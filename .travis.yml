@@ -10,7 +10,7 @@ addons:
             - python-pip
 
 script:
-    - sudo pip ply
-    - pip ply
+    - sudo pip install ply
+    - pip install ply
     - cd scripts/create_bindings/ && python create_bindings.py
     - cd ../../build/linux/ && make all
