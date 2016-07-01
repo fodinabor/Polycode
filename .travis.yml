@@ -12,5 +12,5 @@ addons:
 script:
     - sudo pip install ply
     - pip install ply
-    - cd scripts/create_bindings/ && python create_bindings.py
+    - cd scripts/create_bindings/ && sudo python create_bindings.py
     - cd ../../build/linux/ && make all
