@@ -3,9 +3,6 @@ language: cpp
 sudo: required
 dist: trusty
 
-python:
-  - "2.7"
-
 addons:
     apt:
         packages:
@@ -13,5 +10,6 @@ addons:
             - python-ply
 
 script:
+    - sudo apt-get -yq --no-install-suggests --no-install-recommends --force-yes install python-ply
     - cd scripts/create_bindings/ && python create_bindings.py
     - cd ../../build/linux/ && make all
