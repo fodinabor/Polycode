@@ -1,9 +1,14 @@
 language: cpp
 
-addons:
-  apt:
-    packages:
-    - libsdl1.2-dev
-    - python-ply
+sudo: required
+dist: trusty
 
-script: cd build/linux/ && make all
+addons:
+    apt:
+        packages:
+            - libsdl2-dev
+            - python-ply
+
+script:
+    - cd scripts/create_bindings/ && python create_bindings.py
+    - cd build/linux/ && make all
