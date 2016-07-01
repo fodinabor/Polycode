@@ -7,10 +7,8 @@ addons:
     apt:
         packages:
             - libsdl2-dev
-            - python-pip
+            - python-ply
 
 script:
-    - sudo pip install ply
-    - pip install ply
     - cd scripts/create_bindings/ && sudo python create_bindings.py
     - cd ../../build/linux/ && make all
