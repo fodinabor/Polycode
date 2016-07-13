@@ -9,7 +9,8 @@ function Shader() {
 	})
 }
 
-Shader.prototype = Object.create(Resource.prototype);
+
+Shader.prototype = Object.create(Resource.prototype)
 
 Shader.prototype.__get_numSpotLights = function() {
 	return Polycode.Shader__get_numSpotLights(this.__ptr)
@@ -60,18 +61,6 @@ Shader.prototype.setName = function(name) {
 
 Shader.prototype.getName = function() {
 	return Polycode.Shader_getName(this.__ptr)
-}
-
-Shader.prototype.getParamPointer = function(name) {
-	var retVal = new ProgramParam()
-	retVal.__ptr = Polycode.Shader_getParamPointer(this.__ptr, name)
-	return retVal
-}
-
-Shader.prototype.getAttribPointer = function(name) {
-	var retVal = new ProgramAttribute()
-	retVal.__ptr = Polycode.Shader_getAttribPointer(this.__ptr, name)
-	return retVal
 }
 
 Shader.prototype.reload = function() {

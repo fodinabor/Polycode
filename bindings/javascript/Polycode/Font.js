@@ -9,7 +9,8 @@ function Font(fileName,FTLibrary) {
 	})
 }
 
-Font.prototype = Object.create(Resource.prototype);
+
+Font.prototype = Object.create(Resource.prototype)
 
 Font.prototype.__get_loaded = function() {
 	return Polycode.Font__get_loaded(this.__ptr)
@@ -27,7 +28,7 @@ Duktape.fin(Font.prototype, function (x) {
 })
 
 Font.prototype.getFace = function() {
-	var retVal = new FT_Face()
+	var retVal = new FT_Face("__skip_ptr__")
 	retVal.__ptr = Polycode.Font_getFace(this.__ptr)
 	return retVal
 }

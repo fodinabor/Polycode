@@ -4,16 +4,13 @@ function SkeletonAnimation(name,duration) {
 	}
 }
 
+
 Duktape.fin(SkeletonAnimation.prototype, function (x) {
 	if (x === SkeletonAnimation.prototype) {
 		return;
 	}
 	Polycode.SkeletonAnimation__delete(x.__ptr)
 })
-
-SkeletonAnimation.prototype.addBoneTrack = function(boneTrack) {
-	Polycode.SkeletonAnimation_addBoneTrack(this.__ptr, boneTrack.__ptr)
-}
 
 SkeletonAnimation.prototype.getName = function() {
 	return Polycode.SkeletonAnimation_getName(this.__ptr)

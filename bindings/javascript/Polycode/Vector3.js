@@ -9,6 +9,7 @@ function Vector3(x,y,z) {
 	})
 }
 
+
 Vector3.prototype.__get_x = function() {
 	return Polycode.Vector3__get_x(this.__ptr)
 }
@@ -61,7 +62,7 @@ Vector3.prototype.lengthSquared = function() {
 }
 
 Vector3.prototype.setLength = function(newLength) {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = Polycode.Vector3_setLength(this.__ptr, newLength)
 	return retVal
 }
@@ -71,7 +72,7 @@ Vector3.prototype.dot = function(u) {
 }
 
 Vector3.prototype.crossProduct = function(vec2) {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = Polycode.Vector3_crossProduct(this.__ptr, vec2)
 	return retVal
 }

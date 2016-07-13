@@ -9,8 +9,9 @@ function ShaderPlatformData() {
 	})
 }
 
+
 ShaderPlatformData.prototype.__get_shaderID = function() {
-	var retVal = new GLuint()
+	var retVal = new GLuint("__skip_ptr__")
 	retVal.__ptr = 	Polycode.ShaderPlatformData__get_shaderID(this.__ptr)
 	return retVal
 }
@@ -20,7 +21,7 @@ ShaderPlatformData.prototype.__set_shaderID = function(val) {
 }
 
 ShaderPlatformData.prototype.__get_vertexProgramID = function() {
-	var retVal = new GLuint()
+	var retVal = new GLuint("__skip_ptr__")
 	retVal.__ptr = 	Polycode.ShaderPlatformData__get_vertexProgramID(this.__ptr)
 	return retVal
 }
@@ -30,7 +31,7 @@ ShaderPlatformData.prototype.__set_vertexProgramID = function(val) {
 }
 
 ShaderPlatformData.prototype.__get_fragmentProgramID = function() {
-	var retVal = new GLuint()
+	var retVal = new GLuint("__skip_ptr__")
 	retVal.__ptr = 	Polycode.ShaderPlatformData__get_fragmentProgramID(this.__ptr)
 	return retVal
 }

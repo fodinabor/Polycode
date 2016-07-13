@@ -4,12 +4,10 @@ function Image(fileName) {
 	}
 }
 
+Image.IMAGE_RGB = 0
+Image.IMAGE_RGBA = 1
+Image.IMAGE_FP16 = 2
 
-Image.prototype.BlankImage = function(width,height,type) {
-	var retVal = new Image()
-	retVal.__ptr = Polycode.Image_BlankImage(width, height, type)
-	return retVal
-}
 
 Image.prototype.loadImage = function(fileName) {
 	return Polycode.Image_loadImage(this.__ptr, fileName)
@@ -17,10 +15,6 @@ Image.prototype.loadImage = function(fileName) {
 
 Image.prototype.saveImage = function(fileName) {
 	return Polycode.Image_saveImage(this.__ptr, fileName)
-}
-
-Image.prototype.pasteImage = function(image,x,y,blendingMode,blendAmount,blendColor) {
-	Polycode.Image_pasteImage(this.__ptr, image.__ptr, x, y, blendingMode, blendAmount, blendColor)
 }
 
 Image.prototype.createEmpty = function(width,height,fillColor) {
@@ -36,13 +30,9 @@ Image.prototype.setPixel = function(x,y,r,g,b,a) {
 }
 
 Image.prototype.getPixel = function(x,y) {
-	var retVal = new Color()
+	var retVal = new Color("__skip_ptr__")
 	retVal.__ptr = Polycode.Image_getPixel(this.__ptr, x, y)
 	return retVal
-}
-
-Image.prototype.swap = function(v1,v2) {
-	Polycode.Image_swap(this.__ptr, v1.__ptr, v2.__ptr)
 }
 
 Image.prototype.drawLine = function(x0,y0,x1,y1,col) {
@@ -81,18 +71,6 @@ Image.prototype.fastBlurHor = function(blurSize) {
 	Polycode.Image_fastBlurHor(this.__ptr, blurSize)
 }
 
-Image.prototype.getPixelsInRect = function(x,y,width,height) {
-	var retVal = new char()
-	retVal.__ptr = Polycode.Image_getPixelsInRect(this.__ptr, x, y, width, height)
-	return retVal
-}
-
-Image.prototype.getImagePart = function(subRect) {
-	var retVal = new Image()
-	retVal.__ptr = Polycode.Image_getImagePart(this.__ptr, subRect)
-	return retVal
-}
-
 Image.prototype.getBrushX = function() {
 	return Polycode.Image_getBrushX(this.__ptr)
 }
@@ -115,12 +93,6 @@ Image.prototype.getWidth = function() {
 
 Image.prototype.getHeight = function() {
 	return Polycode.Image_getHeight(this.__ptr)
-}
-
-Image.prototype.getPixels = function() {
-	var retVal = new char()
-	retVal.__ptr = Polycode.Image_getPixels(this.__ptr)
-	return retVal
 }
 
 Image.prototype.premultiplyAlpha = function() {

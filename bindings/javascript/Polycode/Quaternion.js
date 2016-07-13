@@ -10,6 +10,7 @@ function Quaternion(w,x,y,z) {
 	})
 }
 
+
 Quaternion.prototype.__get_x = function() {
 	return Polycode.Quaternion__get_x(this.__ptr)
 }
@@ -54,7 +55,7 @@ Quaternion.prototype.setFromMatrix = function(_mat) {
 }
 
 Quaternion.prototype.Slerp = function(fT,rkP,rkQ,shortestPath) {
-	var retVal = new Quaternion()
+	var retVal = new Quaternion("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_Slerp(fT, rkP, rkQ, shortestPath)
 	return retVal
 }
@@ -64,13 +65,13 @@ Quaternion.prototype.Dot = function(rkQ) {
 }
 
 Quaternion.prototype.Log = function() {
-	var retVal = new Quaternion()
+	var retVal = new Quaternion("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_Log(this.__ptr)
 	return retVal
 }
 
 Quaternion.prototype.Exp = function() {
-	var retVal = new Quaternion()
+	var retVal = new Quaternion("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_Exp(this.__ptr)
 	return retVal
 }
@@ -92,13 +93,13 @@ Quaternion.prototype.createFromMatrix = function(matrix) {
 }
 
 Quaternion.prototype.Squad = function(fT,rkP,rkA,rkB,rkQ,shortestPath) {
-	var retVal = new Quaternion()
+	var retVal = new Quaternion("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_Squad(fT, rkP, rkA, rkB, rkQ, shortestPath)
 	return retVal
 }
 
 Quaternion.prototype.Inverse = function() {
-	var retVal = new Quaternion()
+	var retVal = new Quaternion("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_Inverse(this.__ptr)
 	return retVal
 }
@@ -120,7 +121,7 @@ Quaternion.prototype.fromAngleAxis = function(rfAngle,rkAxis) {
 }
 
 Quaternion.prototype.toEulerAngles = function() {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_toEulerAngles(this.__ptr)
 	return retVal
 }
@@ -134,13 +135,13 @@ Quaternion.prototype.createFromAxisAngle = function(x,y,z,degrees) {
 }
 
 Quaternion.prototype.createMatrix = function() {
-	var retVal = new Matrix4()
+	var retVal = new Matrix4("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_createMatrix(this.__ptr)
 	return retVal
 }
 
 Quaternion.prototype.applyTo = function(v) {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = Polycode.Quaternion_applyTo(this.__ptr, v)
 	return retVal
 }

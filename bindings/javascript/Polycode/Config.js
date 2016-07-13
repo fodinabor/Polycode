@@ -4,6 +4,7 @@ function Config() {
 	}
 }
 
+
 Duktape.fin(Config.prototype, function (x) {
 	if (x === Config.prototype) {
 		return;
@@ -17,12 +18,6 @@ Config.prototype.loadConfig = function(configNamespace,fileName) {
 
 Config.prototype.saveConfig = function(configNamespace,fileName) {
 	Polycode.Config_saveConfig(this.__ptr, configNamespace, fileName)
-}
-
-Config.prototype.getEntry = function(configNamespace,key) {
-	var retVal = new ConfigEntry()
-	retVal.__ptr = Polycode.Config_getEntry(this.__ptr, configNamespace, key)
-	return retVal
 }
 
 Config.prototype.setStringValue = function(configNamespace,key,value) {

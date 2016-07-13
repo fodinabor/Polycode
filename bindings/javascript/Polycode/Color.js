@@ -10,6 +10,10 @@ function Color(r,g,b,a) {
 	})
 }
 
+Color.BLEND_NORMAL = 0
+Color.BLEND_REPLACE_COLOR = 1
+Color.BLEND_ADDITIVE = 2
+
 Color.prototype.__get_r = function() {
 	return Polycode.Color__get_r(this.__ptr)
 }
@@ -50,13 +54,13 @@ Duktape.fin(Color.prototype, function (x) {
 })
 
 Color.prototype.ColorWithInts = function(r,g,b,a) {
-	var retVal = new Color()
+	var retVal = new Color("__skip_ptr__")
 	retVal.__ptr = Polycode.Color_ColorWithInts(r, g, b, a)
 	return retVal
 }
 
 Color.prototype.ColorWithHex = function(hex) {
-	var retVal = new Color()
+	var retVal = new Color("__skip_ptr__")
 	retVal.__ptr = Polycode.Color_ColorWithHex(hex)
 	return retVal
 }
@@ -94,7 +98,7 @@ Color.prototype.setColor = function(r,g,b,a) {
 }
 
 Color.prototype.blendColor = function(c2,mode,amount,c3) {
-	var retVal = new Color()
+	var retVal = new Color("__skip_ptr__")
 	retVal.__ptr = Polycode.Color_blendColor(this.__ptr, c2, mode, amount, c3)
 	return retVal
 }

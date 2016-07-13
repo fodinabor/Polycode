@@ -20,6 +20,7 @@ function LightInfo() {
 	})
 }
 
+
 LightInfo.prototype.__get_importance = function() {
 	return Polycode.LightInfo__get_importance(this.__ptr)
 }
@@ -29,7 +30,7 @@ LightInfo.prototype.__set_importance = function(val) {
 }
 
 LightInfo.prototype.__get_position = function() {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = 	Polycode.LightInfo__get_position(this.__ptr)
 	return retVal
 }
@@ -39,7 +40,7 @@ LightInfo.prototype.__set_position = function(val) {
 }
 
 LightInfo.prototype.__get_direction = function() {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = 	Polycode.LightInfo__get_direction(this.__ptr)
 	return retVal
 }
@@ -57,7 +58,7 @@ LightInfo.prototype.__set_type = function(val) {
 }
 
 LightInfo.prototype.__get_diffuseColor = function() {
-	var retVal = new Color()
+	var retVal = new Color("__skip_ptr__")
 	retVal.__ptr = 	Polycode.LightInfo__get_diffuseColor(this.__ptr)
 	return retVal
 }
@@ -67,7 +68,7 @@ LightInfo.prototype.__set_diffuseColor = function(val) {
 }
 
 LightInfo.prototype.__get_specularColor = function() {
-	var retVal = new Color()
+	var retVal = new Color("__skip_ptr__")
 	retVal.__ptr = 	Polycode.LightInfo__get_specularColor(this.__ptr)
 	return retVal
 }
@@ -133,7 +134,7 @@ LightInfo.prototype.__set_shadowsEnabled = function(val) {
 }
 
 LightInfo.prototype.__get_lightViewMatrix = function() {
-	var retVal = new Matrix4()
+	var retVal = new Matrix4("__skip_ptr__")
 	retVal.__ptr = 	Polycode.LightInfo__get_lightViewMatrix(this.__ptr)
 	return retVal
 }

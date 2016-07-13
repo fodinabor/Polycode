@@ -13,6 +13,14 @@ function ObjectEntry() {
 	})
 }
 
+ObjectEntry.UNKNOWN_ENTRY = - 1
+ObjectEntry.FLOAT_ENTRY = 0
+ObjectEntry.INT_ENTRY = 1
+ObjectEntry.BOOL_ENTRY = 2
+ObjectEntry.ARRAY_ENTRY = 3
+ObjectEntry.STRING_ENTRY = 4
+ObjectEntry.CONTAINER_ENTRY = 5
+
 ObjectEntry.prototype.__get_type = function() {
 	return Polycode.ObjectEntry__get_type(this.__ptr)
 }
@@ -75,24 +83,6 @@ Duktape.fin(ObjectEntry.prototype, function (x) {
 	}
 	Polycode.ObjectEntry__delete(x.__ptr)
 })
-
-ObjectEntry.prototype.readNumber = function(key,out) {
-	return Polycode.ObjectEntry_readNumber(this.__ptr, key, out.__ptr)
-}
-
-ObjectEntry.prototype.readString = function(key,out) {
-	return Polycode.ObjectEntry_readString(this.__ptr, key, out.__ptr)
-}
-
-ObjectEntry.prototype.readBool = function(key,out) {
-	return Polycode.ObjectEntry_readBool(this.__ptr, key, out.__ptr)
-}
-
-ObjectEntry.prototype.addChild = function(name) {
-	var retVal = new ObjectEntry()
-	retVal.__ptr = Polycode.ObjectEntry_addChild(this.__ptr, name)
-	return retVal
-}
 
 ObjectEntry.prototype.getTypedName = function() {
 	return Polycode.ObjectEntry_getTypedName(this.__ptr)

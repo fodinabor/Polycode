@@ -9,8 +9,9 @@ function SpriteFrame() {
 	})
 }
 
+
 SpriteFrame.prototype.__get_coordinates = function() {
-	var retVal = new Rectangle()
+	var retVal = new Rectangle("__skip_ptr__")
 	retVal.__ptr = 	Polycode.SpriteFrame__get_coordinates(this.__ptr)
 	return retVal
 }
@@ -20,7 +21,7 @@ SpriteFrame.prototype.__set_coordinates = function(val) {
 }
 
 SpriteFrame.prototype.__get_anchorPoint = function() {
-	var retVal = new Vector2()
+	var retVal = new Vector2("__skip_ptr__")
 	retVal.__ptr = 	Polycode.SpriteFrame__get_anchorPoint(this.__ptr)
 	return retVal
 }

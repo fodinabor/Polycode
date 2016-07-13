@@ -8,8 +8,9 @@ function AABB() {
 	})
 }
 
+
 AABB.prototype.__get_min = function() {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = 	Polycode.AABB__get_min(this.__ptr)
 	return retVal
 }
@@ -19,7 +20,7 @@ AABB.prototype.__set_min = function(val) {
 }
 
 AABB.prototype.__get_max = function() {
-	var retVal = new Vector3()
+	var retVal = new Vector3("__skip_ptr__")
 	retVal.__ptr = 	Polycode.AABB__get_max(this.__ptr)
 	return retVal
 }

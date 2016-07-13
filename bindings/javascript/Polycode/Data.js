@@ -4,6 +4,7 @@ function Data() {
 	}
 }
 
+
 Duktape.fin(Data.prototype, function (x) {
 	if (x === Data.prototype) {
 		return;
@@ -25,10 +26,4 @@ Data.prototype.setFromString = function(str,encoding) {
 
 Data.prototype.saveToFile = function(fileName) {
 	return Polycode.Data_saveToFile(this.__ptr, fileName)
-}
-
-Data.prototype.getData = function() {
-	var retVal = new char()
-	retVal.__ptr = Polycode.Data_getData(this.__ptr)
-	return retVal
 }
