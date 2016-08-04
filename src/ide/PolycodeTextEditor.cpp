@@ -650,6 +650,7 @@ bool PolycodeTextEditor::openFile(OSFileEntry filePath) {
 	
 	findBar = new FindBar();
 	findBar->visible = false;
+	findBar->enabled = false;
 	addChild(findBar);
 	
 	findBar->findInput->addEventListener(this, Event::COMPLETE_EVENT);
@@ -766,6 +767,7 @@ void PolycodeTextEditor::handleEvent(Event *event) {
 
 void PolycodeTextEditor::showFindBar() {
 	findBar->visible = true;
+	findBar->enabled = true;
 	findBar->focusChild(findBar->findInput);
 	findBar->findInput->selectAll();
 	lastFindString = "";
@@ -793,6 +795,7 @@ void PolycodeTextEditor::showFindBar() {
 
 void PolycodeTextEditor::hideFindBar() {
 	findBar->visible = false;
+	findBar->enabled = false;
 	focusChild(textInput);
 	Resize(editorSize.x, editorSize.y);
 }
