@@ -349,7 +349,6 @@ void Camera::renderFullScreenQuad(GPUDrawBuffer *drawBuffer, int shaderPass) {
 	drawCall.options.enableScissor = false;
 	drawCall.options.depthOnly = false;
 	drawCall.options.blendingMode = Renderer::BLEND_MODE_NONE;
-	drawCall.options.alphaTest = false;
 	drawCall.options.backfaceCull = false;
 	drawCall.options.depthTest = false;
 	drawCall.options.depthWrite = false;
@@ -407,7 +406,7 @@ void Camera::drawFilter(RenderFrame *frame, std::shared_ptr<RenderBuffer> target
         rebuildMaterialBindings();
     }
     
-	targetScene->Render(frame, this, originalFramebuffer, NULL, true);
+	targetScene->Render(frame, this, originalFramebuffer, NULL);
 	
 	for(int i=0; i < shaderPasses.size(); i++) {
 		

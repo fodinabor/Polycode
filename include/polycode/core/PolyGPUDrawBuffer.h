@@ -59,7 +59,6 @@ namespace Polycode {
 		bool depthTest;
 		bool depthWrite;
 		float linePointSize;
-		bool alphaTest;
 		bool backfaceCull;
 		bool depthOnly;
 		bool forceMaterial;
@@ -99,5 +98,7 @@ namespace Polycode {
 		Polycode::Rectangle viewport;
 		std::vector<GPUDrawCall> drawCalls;
 		RenderFrame *renderFrame;
+        bool shadowMapPass;
+        void *userData;
 	};
 }
