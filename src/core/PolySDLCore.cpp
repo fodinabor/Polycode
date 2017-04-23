@@ -509,6 +509,7 @@ bool SDLCore::systemUpdate() {
 	while ( SDL_PollEvent(&event) ) {
 			switch (event.type) {
 				case SDL_QUIT:
+					renderer->getRenderThread()->killThread();
 					running = false;
 				break;
 				case SDL_WINDOWEVENT:
