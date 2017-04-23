@@ -127,7 +127,7 @@ Number Config::getNumericValue(const String& configNamespace, const String& key)
 	}
 }
 
-const String& Config::getStringValue(const String& configNamespace, const String& key) const {
+String Config::getStringValue(const String& configNamespace, const String& key) const {
 	ConfigEntry *ret = getEntry(configNamespace, key);
 	if(ret) {
 		return ret->stringVal;

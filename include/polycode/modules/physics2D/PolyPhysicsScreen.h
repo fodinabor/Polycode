@@ -159,12 +159,12 @@ public:
 	/**
 	* Creates a new physics screen.
 	*/ 
-	PhysicsScene2D(Number worldScale, int velIterations=10, int posIterations=10);
+	PhysicsScene2D(Core* core, Number worldScale, int velIterations=10, int posIterations=10);
 	
 	/**
 	* Default constructor.
 	*/
-	PhysicsScene2D();
+	PhysicsScene2D(Core* core);
 	
 	~PhysicsScene2D();
 	

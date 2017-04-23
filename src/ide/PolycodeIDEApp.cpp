@@ -181,7 +181,7 @@ core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1
 	frame->console->applyTheme();
 
 #ifdef USE_POLYCODEUI_MENUBAR
-	menuBar = new UIMenuBar(100, globalMenu);
+	menuBar = new UIMenuBar(core, globalPool, core->getInput(), 100, globalMenu);
 
 	UIMenuBarEntry *fileEntry = menuBar->addMenuBarEntry("File");
 	fileEntry->addItem("New File", "new_file", KEY_n);
