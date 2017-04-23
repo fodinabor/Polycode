@@ -22,14 +22,12 @@
 
 #include "polycode/core/PolyScene.h"
 #include "polycode/core/PolyCamera.h"
-#include "polycode/core/PolyCoreServices.h"
 #include "polycode/core/PolyLogger.h"
 #include "polycode/core/PolyMaterial.h"
 #include "polycode/core/PolyMesh.h"
 #include "polycode/core/PolyRenderer.h"
 #include "polycode/core/PolyResource.h"
 #include "polycode/core/PolyResourceManager.h"
-#include "polycode/core/PolySceneLight.h"
 #include "polycode/core/PolyInputEvent.h"
 #include "polycode/core/PolySceneMesh.h"
 #include "polycode/core/PolyTexture.h"
@@ -38,24 +36,21 @@
 using std::vector;
 using namespace Polycode;
 
-Scene::Scene() : EventDispatcher() {
+Scene::Scene(Core *core) : core(core), EventDispatcher() {
 	initScene(SCENE_3D);
 }
 
-Scene::Scene(int sceneType) : EventDispatcher() {
+Scene::Scene(Core *core, int sceneType) : core(core), EventDispatcher() {
 	initScene(sceneType);
 }
 
 void Scene::initScene(int sceneType) {
-
 	rootEntity.setContainerScene(this);
-	core = CoreServices::getInstance()->getCore();
 	this->sceneType = sceneType;
 	defaultCamera = new Camera();
 	activeCamera = defaultCamera;
 	overrideMaterial = NULL;
 	enabled = true;
-	hasLightmaps = false;
 	clearColor.setColor(0.13f,0.13f,0.13f,1.0f); 
 	ambientColor.setColor(0.0,0.0,0.0,1.0); 
 	useClearColor = false;
@@ -64,8 +59,6 @@ void Scene::initScene(int sceneType) {
 	remapMouse = false;
 	_doVisibilityChecking = true;
 	constrainPickingToViewport = true;
-	renderer = CoreServices::getInstance()->getRenderer();
-	rootEntity.setRenderer(renderer);
 	setSceneType(sceneType);	
 	core->addEventListener(this, Core::EVENT_CORE_RESIZE);
 	core->getInput()->addEventListener(this, InputEvent::EVENT_MOUSEDOWN);
@@ -93,7 +86,7 @@ void Scene::setSceneType(int newType) {
 			defaultCamera->setOrthoSizeMode(Camera::ORTHO_SIZE_VIEWPORT);
 			defaultCamera->topLeftOrtho = true;
 			rootEntity.setInverseY(true);
-			rootEntity.setPositionY(-CoreServices::getInstance()->getCore()->getYRes());
+			rootEntity.setPositionY(-core->getYRes());
 			break;
 		case SCENE_3D:
 			defaultCamera->setClippingPlanes(1.0, 1000.0);
@@ -118,9 +111,9 @@ bool Scene::isEnabled() {
 	return enabled;
 }
 
-void Scene::Update() {
+void Scene::Update(Number elapsed) {
 	rootEntity.updateEntityMatrix();
-	rootEntity.doUpdates();
+	rootEntity.doUpdates(elapsed);
 }
 
 void Scene::fixedUpdate() {
@@ -194,20 +187,19 @@ void Scene::setEntityVisibility(Entity *entity, Camera *camera) {
 	}
 }
 
-void Scene::Render(RenderFrame *frame, Camera *targetCamera, std::shared_ptr<RenderBuffer> targetFramebuffer, std::shared_ptr<Material> overrideMaterial, bool sendLights) {
+void Scene::Render(RenderFrame *frame, Camera *targetCamera, std::shared_ptr<RenderBuffer> targetFramebuffer, std::shared_ptr<Material> overrideMaterial, bool shadowMapPass) {
 	if(!targetCamera && !activeCamera)
 		return;
 	
-	if(!targetCamera)
+    if(!targetCamera) {
 		targetCamera = activeCamera;
-	
-	
+    }
+    
 	if(targetFramebuffer) {
 		targetCamera->setViewport(Polycode::Rectangle(0.0, 0.0, targetFramebuffer->getWidth(), targetFramebuffer->getHeight()));
 	} else {
 		targetCamera->setViewport(frame->viewport);
 	}
-
 	
 	GPUDrawBuffer *drawBuffer = new GPUDrawBuffer();
 	drawBuffer->renderFrame = frame;
@@ -216,55 +208,20 @@ void Scene::Render(RenderFrame *frame, Camera *targetCamera, std::shared_ptr<Ren
 	drawBuffer->clearDepthBuffer = useClearDepth;
 	drawBuffer->targetFramebuffer = targetFramebuffer;
 	drawBuffer->viewport = targetCamera->getViewport();
-	drawBuffer->backingResolutionScale = Vector2(1.0, 1.0);
-	
+	drawBuffer->backingResolutionScale = Vector2(1.0, 1.0);	
+    drawBuffer->userData = (void*) this;
+    drawBuffer->shadowMapPass = shadowMapPass;
+    
 	if(overrideMaterial) {
 		drawBuffer->globalMaterial = overrideMaterial;
 	} else {
 		drawBuffer->globalMaterial = this->overrideMaterial;
 	}
-	
-	Matrix4 textureMatrix;
-	targetCamera->rebuildTransformMatrix();
-	
+		
 	drawBuffer->projectionMatrix = targetCamera->createProjectionMatrix();
 	drawBuffer->viewMatrix = targetCamera->getConcatenatedMatrix().Inverse();
 	drawBuffer->cameraMatrix = targetCamera->getConcatenatedMatrix();
-	
-	if(sendLights) {
-		for(int i=0; i < lights.size(); i++) {
-			SceneLight *light = lights[i];
-			if(!light->enabled)
-				continue;
-				
-			Vector3 direction;
-			Vector3 position;
-			
-			direction.x = 0;
-			direction.y = 0.0;
-			direction.z = -1.0;
-			direction.Normalize();
-			
-			direction = light->getConcatenatedMatrix().rotateVector(direction);
-			direction = drawBuffer->viewMatrix.rotateVector(direction);
-			
-			if(light->areShadowsEnabled()) {
-				if(light->getType() == SceneLight::SPOT_LIGHT) {
-					light->renderDepthMap(frame, this);
-				}
-			}
-			
-			position = light->getPosition();
-			if(light->getParentEntity() != NULL) {
-				position = light->getParentEntity()->getConcatenatedMatrix() * position;
-			}
-			position = drawBuffer->viewMatrix * position;
-			
-			drawBuffer->lights.push_back(light->getLightInfo());
-			drawBuffer->lights[drawBuffer->lights.size()-1].position = position;
-			drawBuffer->lights[drawBuffer->lights.size()-1].direction = direction;
-		}
-	}
+
 	/*
 	if(_doVisibilityChecking) {
 		targetCamera->buildFrustumPlanes();
@@ -280,11 +237,11 @@ Ray Scene::projectRayFromCameraAndViewportCoordinate(Camera *camera, Vector2 coo
 	Polycode::Rectangle viewport = camera->getViewport();
 	
 	if(remapMouse) {
-		viewport.x = sceneMouseRect.x * renderer->getBackingResolutionScaleX();
-		viewport.y = sceneMouseRect.y * renderer->getBackingResolutionScaleY();
+		viewport.x = sceneMouseRect.x * core->getRenderer()->getBackingResolutionScaleX();
+		viewport.y = sceneMouseRect.y * core->getRenderer()->getBackingResolutionScaleY();
 	}
 	
-	Vector3 dir =  camera->projectRayFrom2DCoordinate(Vector2(coordinate.x *  renderer->getBackingResolutionScaleX(), coordinate.y	* renderer->getBackingResolutionScaleY()), viewport);
+	Vector3 dir =  camera->projectRayFrom2DCoordinate(Vector2(coordinate.x *  core->getRenderer()->getBackingResolutionScaleX(), coordinate.y	* core->getRenderer()->getBackingResolutionScaleY()), viewport);
 	Vector3 pos;
 	
 	switch(sceneType) {
@@ -337,7 +294,7 @@ Ray Scene::projectRayFromCameraAndViewportCoordinate(Camera *camera, Vector2 coo
 void Scene::handleEvent(Event *event) {
 	if(event->getDispatcher() == core) {
 		if(sceneType == SCENE_2D_TOPLEFT) {
-			rootEntity.setPositionY(-CoreServices::getInstance()->getCore()->getYRes());
+			rootEntity.setPositionY(-core->getYRes());
 		}
 	} else if(event->getDispatcher() == core->getInput() && rootEntity.processInputEvents) {
 		InputEvent *inputEvent = (InputEvent*) event;
@@ -349,7 +306,7 @@ void Scene::handleEvent(Event *event) {
 				v.y = sceneMouseRect.y;
 			}
 			
-			if(inputEvent->mousePosition.x < v.x || inputEvent->mousePosition.x > v.x+(v.w / renderer->getBackingResolutionScaleX()) || inputEvent->mousePosition.y < v.y || inputEvent->mousePosition.y > v.y + (v.h/renderer->getBackingResolutionScaleY())) {
+			if(inputEvent->mousePosition.x < v.x || inputEvent->mousePosition.x > v.x+(v.w / core->getRenderer()->getBackingResolutionScaleX()) || inputEvent->mousePosition.y < v.y || inputEvent->mousePosition.y > v.y + (v.h/core->getRenderer()->getBackingResolutionScaleY())) {
 					return;
 			}
 		}
@@ -374,27 +331,5 @@ void Scene::handleEvent(Event *event) {
 			break;	
 		}
 	}
-}
-
-void Scene::addLight(SceneLight *light) {
-	lights.push_back(light);
-}
-
-void Scene::removeLight(SceneLight *light) {
-	removeEntity(light);
-	for(int i=0; i < lights.size(); i++) {
-		if(lights[i] == light) {
-			lights.erase(lights.begin()+i);
-			return;
-		}		
-	}
-}
-
-int Scene::getNumLights() {
-	return lights.size();
-}
-
-SceneLight *Scene::getLight(int index) {
-	return lights[index];
 }
 

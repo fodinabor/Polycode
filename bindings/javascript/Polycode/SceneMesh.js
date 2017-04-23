@@ -1,15 +1,14 @@
 require('Polycode/Entity')
 
-function SceneMesh(fileName) {
+function SceneMesh() {
 	if(arguments[0] != "__skip_ptr__") {
-		this.__ptr = Polycode.SceneMesh(fileName)
+		this.__ptr = Polycode.SceneMesh()
 	}
 	Object.defineProperties(this, {
 		'lineWidth': { enumerable: true, configurable: true, get: SceneMesh.prototype.__get_lineWidth, set: SceneMesh.prototype.__set_lineWidth},
 		'lineSmooth': { enumerable: true, configurable: true, get: SceneMesh.prototype.__get_lineSmooth, set: SceneMesh.prototype.__set_lineSmooth},
 		'pointSmooth': { enumerable: true, configurable: true, get: SceneMesh.prototype.__get_pointSmooth, set: SceneMesh.prototype.__set_pointSmooth},
 		'useGeometryHitDetection': { enumerable: true, configurable: true, get: SceneMesh.prototype.__get_useGeometryHitDetection, set: SceneMesh.prototype.__set_useGeometryHitDetection},
-		'alphaTest': { enumerable: true, configurable: true, get: SceneMesh.prototype.__get_alphaTest, set: SceneMesh.prototype.__set_alphaTest},
 		'backfaceCulled': { enumerable: true, configurable: true, get: SceneMesh.prototype.__get_backfaceCulled, set: SceneMesh.prototype.__set_backfaceCulled},
 		'sendBoneMatricesToMaterial': { enumerable: true, configurable: true, get: SceneMesh.prototype.__get_sendBoneMatricesToMaterial, set: SceneMesh.prototype.__set_sendBoneMatricesToMaterial}
 	})
@@ -48,14 +47,6 @@ SceneMesh.prototype.__get_useGeometryHitDetection = function() {
 
 SceneMesh.prototype.__set_useGeometryHitDetection = function(val) {
 	Polycode.SceneMesh__set_useGeometryHitDetection(this.__ptr, val)
-}
-
-SceneMesh.prototype.__get_alphaTest = function() {
-	return Polycode.SceneMesh__get_alphaTest(this.__ptr)
-}
-
-SceneMesh.prototype.__set_alphaTest = function(val) {
-	Polycode.SceneMesh__set_alphaTest(this.__ptr, val)
 }
 
 SceneMesh.prototype.__get_backfaceCulled = function() {
@@ -105,12 +96,6 @@ SceneMesh.prototype.getMaterial = function() {
 	return retVal
 }
 
-SceneMesh.prototype.loadSkeleton = function(fileName) {
-	var retVal = new Skeleton("__skip_ptr__")
-	retVal.__ptr = Polycode.SceneMesh_loadSkeleton(this.__ptr, fileName)
-	return retVal
-}
-
 SceneMesh.prototype.clearMaterial = function() {
 	Polycode.SceneMesh_clearMaterial(this.__ptr)
 }
@@ -143,10 +128,6 @@ SceneMesh.prototype.getFilename = function() {
 
 SceneMesh.prototype.setFilename = function(fileName) {
 	Polycode.SceneMesh_setFilename(this.__ptr, fileName)
-}
-
-SceneMesh.prototype.loadFromFile = function(fileName) {
-	Polycode.SceneMesh_loadFromFile(this.__ptr, fileName)
 }
 
 SceneMesh.prototype.customHitDetection = function(ray) {

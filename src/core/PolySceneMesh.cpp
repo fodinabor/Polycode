@@ -21,7 +21,6 @@
 */
 
 #include "polycode/core/PolySceneMesh.h"
-#include "polycode/core/PolyCoreServices.h"
 #include "polycode/core/PolyBone.h"
 #include "polycode/core/PolyMaterial.h"
 #include "polycode/core/PolyRenderer.h"
@@ -47,23 +46,19 @@ SceneMesh::SceneMesh() : material(NULL), skeleton(NULL) {
 	lineWidth = 1.0;
 	useGeometryHitDetection = false;
 	backfaceCulled = true;
-	alphaTest = false;
 	sendBoneMatricesToMaterial = false;
-	setMaterialByName("UnlitUntextured");
 }
 
 
-SceneMesh::SceneMesh(const String& fileName) : material(NULL), skeleton(NULL), mesh(NULL) {
-	loadFromFile(fileName);
+SceneMesh::SceneMesh(ResourcePool *pool, const String& fileName) : material(NULL), skeleton(NULL), mesh(NULL) {
+	loadFromFile(pool, fileName);
 	useVertexBuffer = false;
 	lineSmooth = false;
 	lineWidth = 1.0;
 	pointSmooth = false;
 	useGeometryHitDetection = false;
 	backfaceCulled = true;
-	alphaTest = false;
 	sendBoneMatricesToMaterial = false;
-	setMaterialByName("UnlitUntextured");
 }
 
 SceneMesh::SceneMesh(std::shared_ptr<Mesh> mesh) : material(NULL), skeleton(NULL) {
@@ -75,9 +70,7 @@ SceneMesh::SceneMesh(std::shared_ptr<Mesh> mesh) : material(NULL), skeleton(NULL
 	pointSmooth = false;
 	useGeometryHitDetection = false;
 	backfaceCulled = true;
-	alphaTest = false;
 	sendBoneMatricesToMaterial = false;
-	setMaterialByName("UnlitUntextured");
 }
 
 void SceneMesh::setMesh(std::shared_ptr<Mesh> mesh) {
@@ -110,7 +103,6 @@ void SceneMesh::applyClone(Entity *clone, bool deepClone, bool ignoreEditorOnly)
 	_clone->lineWidth = lineWidth;
 	_clone->lineSmooth = lineSmooth;
 	_clone->pointSmooth = pointSmooth;
-	_clone->alphaTest = alphaTest;
 	_clone->backfaceCulled = backfaceCulled;
 	_clone->useGeometryHitDetection = useGeometryHitDetection;
 	_clone->setFilename(fileName);
@@ -128,9 +120,8 @@ void SceneMesh::setFilename(const String &fileName) {
 	this->fileName = fileName;
 }
 
-void SceneMesh::loadFromFile(const String &fileName) {
-	ResourcePool *pool = Services()->getResourceManager()->getGlobalPool();
-	mesh = std::static_pointer_cast<Mesh>(pool->loadResourceWithName(fileName, fileName));
+void SceneMesh::loadFromFile(ResourcePool *pool, const String &fileName) {
+	mesh = pool->loadMesh(fileName);
 	setLocalBoundingBox(mesh->calculateBBox());
 	this->fileName = fileName;
 }
@@ -193,17 +184,6 @@ void SceneMesh::createMaterialBoneParams(ShaderBinding *shaderBinding) {
     }
 }
 
-void SceneMesh::setMaterialByName(const String& materialName, ResourcePool *resourcePool) {
-	std::shared_ptr<Material> material;
-	if(resourcePool) {
-		material =	std::static_pointer_cast<Material>(resourcePool->getResource(Resource::RESOURCE_MATERIAL, materialName));		
-	} else {
-		material = std::static_pointer_cast<Material>(Services()->getResourceManager()->getGlobalPool()->getResource(Resource::RESOURCE_MATERIAL, materialName));
-		
-	}
-	setMaterial(material);
-}
-
 ShaderPass SceneMesh::getShaderPass(unsigned int index) {
 	if(index >= shaderPasses.size()) {
 		printf("WARNING: ACCESSING NON EXISTING SHADER PASS!\n");
@@ -220,8 +200,8 @@ void SceneMesh::addShaderPass(ShaderPass pass) {
 	shaderPasses.push_back(pass);
 }
 
-std::shared_ptr<Skeleton> SceneMesh::loadSkeleton(const String& fileName) {
-	skeleton = std::make_shared<Skeleton>(fileName);
+std::shared_ptr<Skeleton> SceneMesh::loadSkeleton(Core *core, const String& fileName) {
+	skeleton = std::make_shared<Skeleton>(core, fileName);
 	addChild(&*skeleton);
 	setSkeleton(skeleton);
 	return skeleton;
@@ -316,7 +296,6 @@ void SceneMesh::Render(GPUDrawBuffer *buffer) {
     }
 
 	for(int i=0; i < mesh->getNumSubmeshes(); i++) {
-		drawCall.options.alphaTest = alphaTest;
 		drawCall.options.linePointSize = lineWidth;
 		drawCall.options.backfaceCull = backfaceCulled;
 		drawCall.options.depthTest = depthTest;

@@ -1,8 +1,8 @@
 require('Polycode/EventDispatcher')
 
-function Scene(sceneType) {
+function Scene() {
 	if(arguments[0] != "__skip_ptr__") {
-		this.__ptr = Polycode.Scene(sceneType)
+		this.__ptr = Polycode.Scene()
 	}
 	Object.defineProperties(this, {
 		'clearColor': { enumerable: true, configurable: true, get: Scene.prototype.__get_clearColor, set: Scene.prototype.__set_clearColor},
@@ -140,8 +140,8 @@ Scene.prototype.fixedUpdate = function() {
 	Polycode.Scene_fixedUpdate(this.__ptr)
 }
 
-Scene.prototype.Update = function() {
-	Polycode.Scene_Update(this.__ptr)
+Scene.prototype.Update = function(elapsed) {
+	Polycode.Scene_Update(this.__ptr, elapsed)
 }
 
 Scene.prototype.isEnabled = function() {
@@ -154,10 +154,6 @@ Scene.prototype.setEnabled = function(enabled) {
 
 Scene.prototype.setOverrideMaterial = function(material) {
 	Polycode.Scene_setOverrideMaterial(this.__ptr, material)
-}
-
-Scene.prototype.getNumLights = function() {
-	return Polycode.Scene_getNumLights(this.__ptr)
 }
 
 Scene.prototype.doVisibilityChecking = function(val) {

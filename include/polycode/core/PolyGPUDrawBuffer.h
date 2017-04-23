@@ -59,7 +59,6 @@ namespace Polycode {
 		bool depthTest;
 		bool depthWrite;
 		float linePointSize;
-		bool alphaTest;
 		bool backfaceCull;
 		bool depthOnly;
 		bool forceMaterial;
@@ -71,6 +70,7 @@ namespace Polycode {
 	
 	class _PolyExport GPUDrawCall {
 	public:
+		
 		std::shared_ptr<MeshGeometry> submesh;
 		GPUDrawOptions options;
 		Matrix4 modelMatrix;
@@ -98,5 +98,7 @@ namespace Polycode {
 		Polycode::Rectangle viewport;
 		std::vector<GPUDrawCall> drawCalls;
 		RenderFrame *renderFrame;
+        bool shadowMapPass;
+        void *userData;
 	};
 }

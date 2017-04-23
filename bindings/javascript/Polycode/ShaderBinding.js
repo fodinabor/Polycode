@@ -18,12 +18,6 @@ ShaderBinding.prototype.addParam = function(type,name) {
 	return retVal
 }
 
-ShaderBinding.prototype.addParamFromData = function(name,data) {
-	var retVal = new LocalShaderParam("__skip_ptr__")
-	retVal.__ptr = Polycode.ShaderBinding_addParamFromData(this.__ptr, name, data)
-	return retVal
-}
-
 ShaderBinding.prototype.getNumLocalParams = function() {
 	return Polycode.ShaderBinding_getNumLocalParams(this.__ptr)
 }
@@ -42,12 +36,6 @@ ShaderBinding.prototype.getLocalParamByName = function(name) {
 
 ShaderBinding.prototype.removeParam = function(name) {
 	Polycode.ShaderBinding_removeParam(this.__ptr, name)
-}
-
-ShaderBinding.prototype.loadTextureForParam = function(paramName,fileName) {
-	var retVal = new Texture("__skip_ptr__")
-	retVal.__ptr = Polycode.ShaderBinding_loadTextureForParam(this.__ptr, paramName, fileName)
-	return retVal
 }
 
 ShaderBinding.prototype.setTextureForParam = function(paramName,texture) {

@@ -13,13 +13,11 @@ public:
 	~PolycodeTemplateApp();
 
 	void handleEvent(Event *event);
-
 	bool Update();
 
 private:
-	ScenePrimitive *test;
 	Core *core;
 	Scene *scene;
-	std::vector<ScenePrimitive*> tests;
-	SceneLabel *fpsLabel;
+	SceneLabel *label;
+
 };

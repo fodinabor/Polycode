@@ -43,6 +43,10 @@ Material.prototype.addShaderPass = function(pass) {
 	Polycode.Material_addShaderPass(this.__ptr, pass)
 }
 
+Material.prototype.addShaderPassForShader = function(shader) {
+	Polycode.Material_addShaderPassForShader(this.__ptr, shader)
+}
+
 Material.prototype.addShaderPassAtIndex = function(pass,shaderIndex) {
 	Polycode.Material_addShaderPassAtIndex(this.__ptr, pass, shaderIndex)
 }
@@ -63,8 +67,8 @@ Material.prototype.removeShaderRenderTarget = function(index) {
 	Polycode.Material_removeShaderRenderTarget(this.__ptr, index)
 }
 
-Material.prototype.recreateRenderTargets = function() {
-	Polycode.Material_recreateRenderTargets(this.__ptr)
+Material.prototype.recreateRenderTargets = function(screenSize) {
+	Polycode.Material_recreateRenderTargets(this.__ptr, screenSize)
 }
 
 Material.prototype.getName = function() {

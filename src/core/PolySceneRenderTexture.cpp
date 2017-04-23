@@ -21,8 +21,6 @@
 */
 
 #include "polycode/core/PolySceneRenderTexture.h"
-#include "polycode/core/PolyCoreServices.h"
-#include "polycode/core/PolyRenderer.h"
 #include "polycode/core/PolyTexture.h"
 #include "polycode/core/PolyScene.h"
 #include "polycode/core/PolyCamera.h"
@@ -30,10 +28,7 @@
 using namespace Polycode;
 
 SceneRenderTexture::SceneRenderTexture(int renderWidth,int renderHeight, bool floatingPoint) : floatingPoint(floatingPoint) {
-	
 	targetFramebuffer = std::make_shared<RenderBuffer>(renderWidth, renderHeight, true, floatingPoint);
-	renderer = Services()->getRenderer();
-	
 	enabled = true;
 }
 
@@ -49,7 +44,7 @@ void SceneRenderTexture::Render(RenderFrame *frame, Scene *targetScene, Camera* 
 	if(targetCamera->hasFilterShader()) {
 		targetCamera->drawFilter(frame, targetFramebuffer, targetScene);
 	} else {
-		targetScene->Render(frame, targetCamera, targetFramebuffer, NULL, true);
+		targetScene->Render(frame, targetCamera, targetFramebuffer, NULL);
 	}
 }
 

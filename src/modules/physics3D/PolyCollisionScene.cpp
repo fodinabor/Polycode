@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 using namespace Polycode;
 
-CollisionScene::CollisionScene(Vector3 size, bool virtualScene, bool deferInitCollision) : Scene(Scene::SCENE_3D, virtualScene), world(NULL), collisionConfiguration(NULL), dispatcher(NULL), axisSweep(NULL) {
+CollisionScene::CollisionScene(Core *core, Vector3 size, bool deferInitCollision) : Scene(core, Scene::SCENE_3D), world(NULL), collisionConfiguration(NULL), dispatcher(NULL), axisSweep(NULL) {
 	if(!deferInitCollision) {
 		initCollisionScene(size);
 	}
@@ -69,7 +69,7 @@ void CollisionScene::enableCollision(Entity *entity, bool val) {
 
 void CollisionScene::adjustForCollision(CollisionEntity *collisionEntity) {
 	CollisionResult result;
-//	Number elapsed = CoreServices::getInstance()->getCore()->getElapsed();
+//	Number elapsed = core->getElapsed();
 	result.collided = false;
 	for(int i=0; i < collisionChildren.size(); i++) {
 		if(collisionChildren[i] != collisionEntity) {

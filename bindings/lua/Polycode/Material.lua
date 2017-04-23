@@ -57,6 +57,10 @@ function Material:addShaderPass(pass)
 	local retVal = Polycode.Material_addShaderPass(self.__ptr, pass.__ptr)
 end
 
+function Material:addShaderPassForShader(shader)
+	local retVal = Polycode.Material_addShaderPassForShader(self.__ptr, shader.__ptr)
+end
+
 function Material:addShaderPassAtIndex(pass, shaderIndex)
 	local retVal = Polycode.Material_addShaderPassAtIndex(self.__ptr, pass.__ptr, shaderIndex)
 end
@@ -79,8 +83,8 @@ function Material:removeShaderRenderTarget(index)
 	local retVal = Polycode.Material_removeShaderRenderTarget(self.__ptr, index)
 end
 
-function Material:recreateRenderTargets()
-	local retVal =  Polycode.Material_recreateRenderTargets(self.__ptr)
+function Material:recreateRenderTargets(screenSize)
+	local retVal = Polycode.Material_recreateRenderTargets(self.__ptr, screenSize.__ptr)
 end
 
 function Material:getName()

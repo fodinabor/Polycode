@@ -37,7 +37,6 @@ namespace Polycode {
 		
 	class Camera;
 	class Entity;
-	class SceneLight;
 	class Mesh;
 	class RenderFrame;
 	
@@ -49,16 +48,17 @@ namespace Polycode {
 	class _PolyExport Scene : public EventDispatcher {
 	public:
 
+        Scene(){}
 		/**
 		* Default constructor with options. 
 		* @param sceneType Type of scene to create. Can be Scene::SCENE_2D, Scene::SCENE_3D or Scene::SCENE_2D_TOPLEFT
 		*/		
-		Scene(int sceneType);
+		Scene(Core *core, int sceneType);
 				
 		/**
 		* Default constructor. Defaults to type Scene::SCENE_3D
 		*/
-		Scene();
+		Scene(Core *core);
 		
 		virtual ~Scene();
 		
@@ -117,12 +117,12 @@ namespace Polycode {
 		void setSceneType(int newType);
 
 		virtual void fixedUpdate();
-		virtual void Update();
+		virtual void Update(Number elapsed);
 	
 		bool isEnabled();		
 		void setEnabled(bool enabled);
 		
-		void Render(RenderFrame *frame, Camera *targetCamera = NULL, std::shared_ptr<RenderBuffer> targetFramebuffer = nullptr, std::shared_ptr<Material> overrideMaterial = nullptr, bool sendLights = false);
+		void Render(RenderFrame *frame, Camera *targetCamera = NULL, std::shared_ptr<RenderBuffer> targetFramebuffer = nullptr, std::shared_ptr<Material> overrideMaterial = nullptr, bool shadowMapPass = false);
 		
 		
 		void setOverrideMaterial(std::shared_ptr<Material> material);
@@ -130,21 +130,6 @@ namespace Polycode {
 		void handleEvent(Event *event);
 		
 		Ray projectRayFromCameraAndViewportCoordinate(Camera *camera, Vector2 coordinate);
-		
-		/**
-		* Adds a light to the scene.
-		* @param light Light to add to the scene.
-		*/
-		void addLight(SceneLight *light);
-		
-		/**
-		* Removes a light from the scene.
-		* @param light Light to remove from the scene.
-		*/		
-		void removeLight(SceneLight *light);		
-				
-		int getNumLights();
-		SceneLight *getLight(int index);
 		
 		/**
 		* Scene clear color
@@ -203,12 +188,8 @@ namespace Polycode {
 		void setEntityVisibility(Entity *entity, Camera *camera);
 		void setEntityVisibilityBool(Entity *entity, bool val);
 		
-		bool hasLightmaps;
 		bool _doVisibilityChecking;
-		
-		Renderer *renderer;
-		std::vector <SceneLight*> lights;
-		
+
 		Camera *defaultCamera;
 		Camera *activeCamera;
 		

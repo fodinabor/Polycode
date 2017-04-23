@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "polycode/core/PolyResource.h"
 #include <string.h>
 #include <memory>
+#include <mutex>
 
 namespace Polycode {
 
@@ -39,8 +40,9 @@ namespace Polycode {
 	class VertexDataArray;
 	class LocalShaderParam;
 	class RenderBuffer;
-	class CoreMutex;
-	
+    class Core;
+    class ResourcePool;
+    
 	class _PolyExport ProgramParam {
 		public:
 	
@@ -86,13 +88,14 @@ namespace Polycode {
 	class _PolyExport ShaderProgram : public Resource {
 		public:
 			explicit ShaderProgram(const String &fileName);
+			explicit ShaderProgram(const String &fileName, int type);
 			virtual ~ShaderProgram();
 			
 			virtual void reloadProgram() {}
 			static const int TYPE_VERT = 0;
 			static const int TYPE_FRAG = 1;
 			int type;
-			void reloadResource();
+			void reloadResource(Core *core);
 	};
 
 	class _PolyExport Shader : public Resource {
@@ -179,9 +182,9 @@ namespace Polycode {
 			void setCubemap(std::shared_ptr<Cubemap> cubemap);
 			std::shared_ptr<Cubemap> getCubemap();
 		
-			void setParamValueFromString(int type, String pvalue);
+			void setParamValueFromString(ResourcePool *pool, int type, String pvalue);
         
-            CoreMutex *accessMutex;
+            std::mutex POLYIGNORE accessMutex;
 	};
 	
 	class AttributeBinding : public PolyBase {
@@ -215,15 +218,14 @@ namespace Polycode {
 			std::shared_ptr<LocalShaderParam> addParam(int type, const String& name);
 			std::shared_ptr<LocalShaderParam> addParamPointer(int type, const String& name, void *ptr);
 		
-			std::shared_ptr<LocalShaderParam> addParamFromData(const String &name, const String &data);
+			std::shared_ptr<LocalShaderParam> addParamFromData(ResourcePool *pool, const String &name, const String &data);
 		
 			unsigned int getNumLocalParams();
 			std::shared_ptr<LocalShaderParam> getLocalParam(unsigned int index);
 			std::shared_ptr<LocalShaderParam> getLocalParamByName(const String& name);
 		
 			void removeParam(const String &name);
-		
-			std::shared_ptr<Texture> loadTextureForParam(const String &paramName, const String &fileName);
+	
 			void setTextureForParam(const String &paramName, std::shared_ptr<Texture> texture);
 			void setCubemapForParam(const String &paramName, std::shared_ptr<Cubemap> cubemap);
 		
@@ -260,9 +262,8 @@ namespace Polycode {
 			std::vector<RenderTargetBinding*> colorTargetBindings;
 			std::vector<RenderTargetBinding*> depthTargetBindings;
 		
-			std::shared_ptr<Shader> targetShader;
-		
-			CoreMutex *accessMutex;
+			std::shared_ptr<Shader> targetShader;		
+            std::mutex POLYIGNORE accessMutex;
 	};
 
 }

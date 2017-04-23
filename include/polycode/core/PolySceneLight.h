@@ -49,7 +49,7 @@ namespace Polycode {
 			* @param linearAttenuation Linear falloff attenuation value 
 			* @param quadraticAttenuation Quadratic falloff attenuation value				
 			*/ 
-			SceneLight(int type, Number intensity, Number constantAttenuation=1, Number linearAttenuation=1, Number quadraticAttenuation=1);
+			SceneLight(int type, Number intensity, Number constantAttenuation=1, Number linearAttenuation=1, Number quadraticAttenuation=1, std::shared_ptr<Material> depthMapMaterial = nullptr);
 			virtual ~SceneLight();
 		
 			/*
@@ -82,6 +82,8 @@ namespace Polycode {
 			int getType() const;
 			
 			void renderDepthMap(RenderFrame *frame, Scene *scene);
+        
+            void Render(GPUDrawBuffer *buffer);
 			
 			static const int POINT_LIGHT = 0;
 			static const int SPOT_LIGHT = 1;
@@ -189,7 +191,7 @@ namespace Polycode {
 			LightInfo lightInfo;
 
 			std::shared_ptr<RenderBuffer> shadowMapRenderBuffer;
-			std::shared_ptr<Material> unlitMaterial;
+			std::shared_ptr<Material> depthMapMaterial;
 			Camera *spotCamera;		
 			unsigned int shadowMapRes;
 			Number shadowMapFOV;

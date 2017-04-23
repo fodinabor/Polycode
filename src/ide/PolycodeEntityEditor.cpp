@@ -86,7 +86,7 @@ Entity *DummyTargetEntity::getPropertyEntity() {
 	return propertyEntity;
 }
 
-CurveDisplay::CurveDisplay(Scene *parentScene, SceneCurve *curve) : DummyTargetEntity () {
+CurveDisplay::CurveDisplay(CoreInput *input, ResourcePool *resourcePool, Scene *parentScene, SceneCurve *curve) : DummyTargetEntity (), coreInput(input){
 	editorOnly = true;
 	curve->addChild(this);
 	this->curve = curve;
@@ -99,6 +99,8 @@ CurveDisplay::CurveDisplay(Scene *parentScene, SceneCurve *curve) : DummyTargetE
 	controlPointLines->setColor(1.0, 1.0, 0.4, 1.0);
 	addChild(controlPointLines);
 	controlPointLines->setBlendingMode(Renderer::BLEND_MODE_NORMAL);
+    controlPointLines->castShadows = false;
+    controlPointLines->setMaterial(resourcePool->getMaterial("UnlitUntextured"));
 	controlPointLines->setForceMaterial(true);
    
 	mainPoints = new SceneMesh();
@@ -106,20 +108,20 @@ CurveDisplay::CurveDisplay(Scene *parentScene, SceneCurve *curve) : DummyTargetE
 	addChild(mainPoints);
 	mainPoints->pointSmooth = true;
 	mainPoints->setForceMaterial(true);
-	mainPoints->setMaterialByName("UnlitPointUntextured");
+    mainPoints->castShadows = false;
+	mainPoints->setMaterial(resourcePool->getMaterial("UnlitPointUntextured"));
 	mainPoints->getShaderPass(0).shaderBinding->addParam(ProgramParam::PARAM_NUMBER, "pointSize")->setNumber(10.0);
 	
 	controlPoints = new SceneMesh();
+    controlPoints->castShadows = false;
 	controlPoints->setColor(1.0, 0.7, 0.0, 1.0);
 	addChild(controlPoints);
 	controlPoints->pointSmooth = true;
 	controlPoints->setForceMaterial(true);
-	controlPoints->setMaterialByName("UnlitPointUntextured");
+	controlPoints->setMaterial(resourcePool->getMaterial("UnlitPointUntextured"));
 	controlPoints->getShaderPass(0).shaderBinding->addParam(ProgramParam::PARAM_NUMBER, "pointSize")->setNumber(8.0);
 	
 	renderControlPoints = false;
-	
-	coreInput = Services()->getCore()->getInput();
 	coreInput->addEventListener(this, InputEvent::EVENT_MOUSEDOWN);
 }
 
@@ -143,7 +145,7 @@ void CurveDisplay::handleSelect() {
 }
 
 CurveDisplay::~CurveDisplay() {
-	Services()->getCore()->getInput()->removeAllHandlersForListener(this);
+	coreInput->removeAllHandlersForListener(this);
 }
 
 void CurveDisplay::handleEvent(Event *event) {
@@ -248,7 +250,7 @@ void CurveDisplay::setDummyTransform(Entity *dummy) {
 	}
 }
 
-void CurveDisplay::Update() {
+void CurveDisplay::Update(Number elapsed) {
 	
 	mainPoints->getMesh()->clearMesh();
 	controlPoints->getMesh()->clearMesh();
@@ -293,24 +295,29 @@ void CurveDisplay::Update() {
 	
 }
 
-LightDisplay::LightDisplay(SceneLight *light) : Entity() {
+LightDisplay::LightDisplay(std::shared_ptr<Material> material, SceneLight *light) : Entity() {
 	editorOnly = true;
 	this->light = light;
 	spotSpot = new ScenePrimitive(ScenePrimitive::TYPE_LINE_CIRCLE, 1.0, 1.0, 32);
+    spotSpot->setMaterial(material);
 	addChild(spotSpot);
 	spotSpot->setColor(1.0, 0.8, 0.0, 1.0);
 	spotSpot->enabled = false;
 	spotSpot->setBlendingMode(Renderer::BLEND_MODE_NORMAL);
 	spotSpot->setForceMaterial(true);
+    spotSpot->castShadows = false;
 	
 	fovSceneMesh = new SceneMesh();
+    fovSceneMesh->setMaterial(material);
 	fovSceneMesh->setColor(1.0, 0.8, 0.0, 1.0);
 	fovMesh = fovSceneMesh->getMesh();
 	addChild(fovSceneMesh);
 	fovSceneMesh->setBlendingMode(Renderer::BLEND_MODE_NORMAL);
 	fovSceneMesh->setForceMaterial(true);
-	
+	fovSceneMesh->castShadows = false;
+    
 	MeshGeometry fovMeshGeometry;
+    fovMeshGeometry.indexedMesh = true;
 	fovMeshGeometry.setMeshType(MeshGeometry::LINE_MESH);
 	
 	fovMeshGeometry.addVertex(0.0, 0.0, 0.0);
@@ -334,7 +341,7 @@ LightDisplay::~LightDisplay() {
 	
 }
 
-void LightDisplay::Update() {
+void LightDisplay::Update(Number elapsed) {
 	if(light->getLightType() == SceneLight::SPOT_LIGHT) {
 		spotSpot->enabled = true;
 		fovSceneMesh->enabled = true;
@@ -363,11 +370,13 @@ void LightDisplay::Update() {
 }
 
 
-CameraDisplay::CameraDisplay(Camera *camera) : Entity() {
+CameraDisplay::CameraDisplay(std::shared_ptr<Material> material, Camera *camera) : Entity() {
 	
 	editorOnly = true;
 	
 	fovSceneMesh = new SceneMesh();
+    fovSceneMesh->castShadows = false;
+    fovSceneMesh->setMaterial(material);
 	fovSceneMesh->setBlendingMode(Renderer::BLEND_MODE_NORMAL);
 	fovSceneMesh->setColor(1.0, 0.0, 1.0, 1.0);
 	fovMesh = fovSceneMesh->getMesh();
@@ -408,7 +417,7 @@ CameraDisplay::~CameraDisplay() {
 	
 }
 
-void CameraDisplay::Update() {
+void CameraDisplay::Update(Number elapsed) {
 	
 	if(camera->getOrthoMode()) {
 
@@ -453,18 +462,18 @@ void CameraDisplay::Update() {
 	}
 }
 
-CameraPreviewWindow::CameraPreviewWindow() : UIElement() {
+CameraPreviewWindow::CameraPreviewWindow(Core *core, ResourcePool *pool) : UIElement(core) {
 	
-	bgRect = new UIRect((160 * 1.5)+16, (90 * 1.5) + 38);
+	bgRect = new UIRect(core, pool, (160 * 1.5)+16, (90 * 1.5) + 38);
 	addChild(bgRect);
 	bgRect->setColor(0.0, 0.0, 0.0, 0.5);
 	
-	UILabel *label = new UILabel("PREVIEW", 11);
+	UILabel *label = new UILabel(core, pool, "PREVIEW", 11);
 	label->setColor(1.0, 1.0, 1.0, 1.0);
 //	  addChild(label);
 	label->setPosition(15, 3);
   
-	aspectCombo = new UIComboBox(globalMenu, 80);
+	aspectCombo = new UIComboBox(core, pool, globalMenu, 80);
 	addChild(aspectCombo);
 	aspectCombo->setPosition(5, 3);
 	aspectCombo->addComboItem("16:9");
@@ -473,14 +482,15 @@ CameraPreviewWindow::CameraPreviewWindow() : UIElement() {
 	aspectCombo->addComboItem("16:18");
 	aspectCombo->addEventListener(this, UIEvent::CHANGE_EVENT);
 	
-	pinButton = new UIButton("Pin", 60);
+	pinButton = new UIButton(core, pool, "Pin", 60);
 	addChild(pinButton);
 	pinButton->addEventListener(this, UIEvent::CLICK_EVENT);
 	
-	previewRect = new UIRect(160 * 1.5, 90 * 1.5);
+	previewRect = new UIRect(core, pool, 160 * 1.5, 90 * 1.5);
 	previewRect->setPosition(8, 30);
 	addChild(previewRect);
 	enabled = false;
+	visible = false;
 	camera = NULL;
 	scene = NULL;
 	renderTexture = NULL;
@@ -564,6 +574,7 @@ void CameraPreviewWindow::setCamera(Scene *scene, Camera *camera) {
 	
 	if(camera) {
 		enabled = true;
+        visible = true;
 		if(renderTexture) {
 			delete renderTexture;
 		}
@@ -573,11 +584,13 @@ void CameraPreviewWindow::setCamera(Scene *scene, Camera *camera) {
 	} else {
 		if(!pinned) {
 			enabled = false;
+            visible = false;
 		}
 	}
 }
 
-EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
+EntityEditorMainView::EntityEditorMainView(Core *core, ResourcePool *pool, PolycodeEditor *editor) : UIElement(core), resourcePool(pool)
+{
 	processInputEvents = true;
 	multiselectIndex = 0;
 	objectRootInstance = NULL;
@@ -587,7 +600,7 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	setOwnsChildrenRecursive(true);
 	
 	this->editor = editor;
-	mainScene = new Scene(Scene::SCENE_3D);
+	mainScene = new Scene(core, Scene::SCENE_3D);
 	
 //	  mainScene->getDefaultCamera()->frustumCulling = false;
 //	  mainScene->doVisibilityChecking(false);
@@ -605,16 +618,16 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	customLight1 = new SceneLight(SceneLight::POINT_LIGHT, 999999, customFalloff, customFalloff, customFalloff);
 	customLight1->editorOnly = true;
 	customLight1->setPosition(-9999, 9999, 9999);
-	mainScene->addLight(customLight1);
+	mainScene->addChild(customLight1);
 	customLight1->enabled = false;
 
 	customLight2 = new SceneLight(SceneLight::POINT_LIGHT, 999999, customFalloff, customFalloff, customFalloff);
 	customLight2->editorOnly = true;
 	customLight2->setPosition(8999, -8999, -8999);
-	mainScene->addLight(customLight2);
+	mainScene->addChild(customLight2);
 	customLight2->enabled = false;
 	
-	renderTextureShape = new UIRect(256, 256);
+	renderTextureShape = new UIRect(core, pool, 256, 256);
 	renderTextureShape->setAnchorPoint(-1.0, -1.0, 0.0);	
 	renderTextureShape->setTexture(renderTexture->getTargetTexture());
 	addChild(renderTextureShape);
@@ -623,20 +636,20 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	renderTextureShape->addEventListener(this, InputEvent::EVENT_MOUSEDOWN);
 
 	
-	cameraPreview = new CameraPreviewWindow();
+	cameraPreview = new CameraPreviewWindow(core, pool);
 	addChild(cameraPreview);
 	cameraPreview->setPosition(5, 35);
 	
 	
-	headerBg = new UIRect(10,10);
+	headerBg = new UIRect(core, pool, 10,10);
 	addChild(headerBg);
 	headerBg->setAnchorPoint(-1.0, -1.0, 0.0);
-	headerBg->color.setColorHexFromString(CoreServices::getInstance()->getConfig()->getStringValue("Polycode", "uiHeaderBgColor"));
+	headerBg->color.setColorHexFromString(core->getConfig()->getStringValue("Polycode", "uiHeaderBgColor"));
 
-	footerBg = new UIRect(10,10);
+	footerBg = new UIRect(core, pool, 10,10);
 	addChild(footerBg);
 	footerBg->setAnchorPoint(-1.0, -1.0, 0.0);
-	footerBg->color.setColorHexFromString(CoreServices::getInstance()->getConfig()->getStringValue("Polycode", "uiHeaderBgColor"));
+	footerBg->color.setColorHexFromString(core->getConfig()->getStringValue("Polycode", "uiHeaderBgColor"));
 	
 	bottomBar = new Entity();
 	addChild(bottomBar);
@@ -653,7 +666,7 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	mainScene->getDefaultCamera( )->lookAt(Vector3());
 	mainScene->getDefaultCamera()->setClippingPlanes(0.01, 1000);
 	
-	grid = new EditorGrid();
+	grid = new EditorGrid(core);
 	grid->addEventListener(this, Event::CHANGE_EVENT);
 	mainScene->addChild(grid);
 	
@@ -669,26 +682,26 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	addChild(iconBase);
 	iconBase->processInputEvents = true;
 	
-	transformGizmo = new TransformGizmo(mainScene, mainScene->getDefaultCamera());
+	transformGizmo = new TransformGizmo(core, pool, mainScene, mainScene->getDefaultCamera());
 	transformGizmo->enableGizmo = false;
 	transformGizmo->addEventListener(this, Event::CHANGE_EVENT);
 	transformGizmo->addEventListener(this, Event::SELECT_EVENT);
 	
 	mainScene->addChild(transformGizmo);		
-	trackballCamera = new TrackballCamera(mainScene->getDefaultCamera(), renderTextureShape);
+	trackballCamera = new TrackballCamera(core->getInput(), mainScene->getDefaultCamera(), renderTextureShape);
 	trackballCamera->addEventListener(this, Event::CHANGE_EVENT);
 	   
-	addEntityButton = new UIImageButton("entityEditor/add_entity.png", 1.0, 24, 24);
+	addEntityButton = new UIImageButton(core, pool, "entityEditor/add_entity.png", 1.0, 24, 24);
 	topBar->addChild(addEntityButton);
 	addEntityButton->setPosition(4, 2);
 	addEntityButton->addEventListener(this, UIEvent::CLICK_EVENT);
 	
-	transformGizmoMenu = new TransformGizmoMenu(transformGizmo);
+	transformGizmoMenu = new TransformGizmoMenu(core, pool, transformGizmo);
 	topBar->addChild(transformGizmoMenu);
 	transformGizmoMenu->setPositionX(40);
 	
 
-	viewModeSelector = new UIIconSelector();
+	viewModeSelector = new UIIconSelector(core, pool);
 	viewModeSelector->addIcon("entityEditor/icon_cam_2d.png");
 	viewModeSelector->addIcon("entityEditor/icon_cam_x.png");
 	viewModeSelector->addIcon("entityEditor/icon_cam_y.png");
@@ -698,7 +711,7 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	viewModeSelector->selectIndex(EDITOR_MODE_3D);
 	viewModeSelector->addEventListener(this, UIEvent::SELECT_EVENT);
 	
-	shadeModeSelector = new UIIconSelector();
+	shadeModeSelector = new UIIconSelector(core, pool);
 	shadeModeSelector->addIcon("entityEditor/shade_full.png");
 	shadeModeSelector->addIcon("entityEditor/shade_solid.png");
 	shadeModeSelector->addIcon("entityEditor/shade_wire.png");
@@ -706,7 +719,7 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	shadeModeSelector->setPosition(320, 3);
 	shadeModeSelector->addEventListener(this, UIEvent::SELECT_EVENT);
 
-	lightingModeSelector = new UIIconSelector();
+	lightingModeSelector = new UIIconSelector(core, pool);
 	lightingModeSelector->addIcon("entityEditor/lights_icon.png");
 	lightingModeSelector->addIcon("entityEditor/nolights_icon.png");
 	topBar->addChild(lightingModeSelector);
@@ -714,39 +727,39 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	lightingModeSelector->addEventListener(this, UIEvent::SELECT_EVENT);
 	
 	
-	moveUpButton = new UIImageButton("entityEditor/button_move_up.png", 1.0, 24, 24);
+	moveUpButton = new UIImageButton(core, pool, "entityEditor/button_move_up.png", 1.0, 24, 24);
 	bottomBar->addChild(moveUpButton);
 	moveUpButton->setPosition(4, 2);
 	moveUpButton->addEventListener(this, UIEvent::CLICK_EVENT);
 	
-	moveTopButton = new UIImageButton("entityEditor/button_move_top.png", 1.0, 24, 24);
+	moveTopButton = new UIImageButton(core, pool, "entityEditor/button_move_top.png", 1.0, 24, 24);
 	bottomBar->addChild(moveTopButton);
 	moveTopButton->setPosition(30, 2);
 	moveTopButton->addEventListener(this, UIEvent::CLICK_EVENT);
 
-	moveDownButton = new UIImageButton("entityEditor/button_move_down.png", 1.0, 24, 24);
+	moveDownButton = new UIImageButton(core, pool, "entityEditor/button_move_down.png", 1.0, 24, 24);
 	bottomBar->addChild(moveDownButton);
 	moveDownButton->setPosition(56, 2);
 	moveDownButton->addEventListener(this, UIEvent::CLICK_EVENT);
 
-	moveBottomButton = new UIImageButton("entityEditor/button_move_bottom.png", 1.0, 24, 24);
+	moveBottomButton = new UIImageButton(core, pool, "entityEditor/button_move_bottom.png", 1.0, 24, 24);
 	bottomBar->addChild(moveBottomButton);
 	moveBottomButton->setPosition(82, 2);
 	moveBottomButton->addEventListener(this, UIEvent::CLICK_EVENT);
 	
-	gridSettingsButton = new UIImageButton("entityEditor/grid_button.png", 1.0, 24, 24);
+	gridSettingsButton = new UIImageButton(core, pool, "entityEditor/grid_button.png", 1.0, 24, 24);
 	bottomBar->addChild(gridSettingsButton);
 	gridSettingsButton->setPosition(120, 2);
 	gridSettingsButton->addEventListener(this, UIEvent::CLICK_EVENT);
 	
-	snapSelector = new UIIconSelector();
+	snapSelector = new UIIconSelector(core, pool);
 	snapSelector->addIcon("entityEditor/snap_off.png");
 	snapSelector->addIcon("entityEditor/snap_on.png");
 	bottomBar->addChild(snapSelector);
 	snapSelector->setPosition(156, 2);
 	snapSelector->addEventListener(this, UIEvent::SELECT_EVENT);
 	
-	iconVisibilitySelector = new UIIconSelector();
+	iconVisibilitySelector = new UIIconSelector(core, pool);
 	iconVisibilitySelector->addIcon("entityEditor/show_icons.png");
 	iconVisibilitySelector->addIcon("entityEditor/hide_icons.png");
 	bottomBar->addChild(iconVisibilitySelector);
@@ -760,10 +773,10 @@ EntityEditorMainView::EntityEditorMainView(PolycodeEditor *editor) {
 	
 	editorMode = EDITOR_MODE_3D;
 	
-	input = CoreServices::getInstance()->getCore()->getInput();
+	input = core->getInput();
 	input->addEventListener(this, InputEvent::EVENT_KEYDOWN);
 	
-	gridSettings = new EditorGridSettingsWindow(grid);
+	gridSettings = new EditorGridSettingsWindow(core, pool, grid);
 	addChild(gridSettings);
 	gridSettings->setPosition(30,40);
 }
@@ -815,10 +828,6 @@ void EntityEditorMainView::doAction(String actionName, PolycodeEditorActionData 
 				sceneData->entries[i].parentEntity->addChild(sceneData->entries[i].entity);
 				
 				SceneLight *sceneLight = dynamic_cast<SceneLight*>(sceneData->entries[i].entity);
-				if(sceneLight) {
-					mainScene->addLight(sceneLight);
-				}
-				
 				setEditorPropsRecursive(sceneData->entries[i].entity);
 				selectEntity(sceneData->entries[i].entity, true, false);
 			}
@@ -840,10 +849,6 @@ void EntityEditorMainView::doAction(String actionName, PolycodeEditorActionData 
 			sceneData->entries[0].parentEntity->addChild(sceneData->entries[0].entity);
 			
 			SceneLight *sceneLight = dynamic_cast<SceneLight*>(sceneData->entries[0].entity);
-			if(sceneLight) {
-				mainScene->addLight(sceneLight);
-			}
-			
 			
 			setEditorPropsRecursive(sceneData->entries[0].entity);
 			selectEntity(sceneData->entries[0].entity, true, false);
@@ -880,7 +885,7 @@ void EntityEditorMainView::setEditorMode(int newMode) {
 			grid->setGridMode(EditorGrid::GRID_MODE_2D_X);
 			transformGizmo->setGizmoMode(TransformGizmo::GIZMO_MODE_2D_X);
 			trackballCamera->disableRotation(true);
-			Update();
+			Update(0.0);
 		break;
 		case EDITOR_MODE_3D_Y:
 			
@@ -891,7 +896,7 @@ void EntityEditorMainView::setEditorMode(int newMode) {
 			grid->setGridMode(EditorGrid::GRID_MODE_2D_Y);
 			transformGizmo->setGizmoMode(TransformGizmo::GIZMO_MODE_2D_Y);
 			trackballCamera->disableRotation(true);
-			Update();
+			Update(0.0);
 		break;
 		case EDITOR_MODE_3D_Z:
 		case EDITOR_MODE_2D:
@@ -902,7 +907,7 @@ void EntityEditorMainView::setEditorMode(int newMode) {
 			grid->setGridMode(EditorGrid::GRID_MODE_2D_Z);
 			transformGizmo->setGizmoMode(TransformGizmo::GIZMO_MODE_2D_Z);
 			trackballCamera->disableRotation(true);
-			Update();
+			Update(0.0);
 		break;
 	}
 
@@ -971,8 +976,8 @@ bool EntityDistanceSorter::operator() (MultiselectorEntry i,MultiselectorEntry j
 	}
 }
 
-void EntityEditorMainView::Update() {
-	mainScene->Update();
+void EntityEditorMainView::Update(Number elapsed) {
+	mainScene->Update(elapsed);
 }
 
 void EntityEditorMainView::fixedUpdate() {
@@ -1045,9 +1050,9 @@ void EntityEditorMainView::createIcon(Entity *entity, String iconFile) {
 	entity->removeAllHandlersForListener(this);
 	
 	ScenePrimitive *iconPrimitive = new ScenePrimitive(ScenePrimitive::TYPE_VPLANE, 32, 32);
-	iconPrimitive->setMaterialByName("Unlit");
+	iconPrimitive->setMaterial(resourcePool->getMaterial("Unlit"));
 	iconPrimitive->setBlendingMode(Renderer::BLEND_MODE_NORMAL);
-	Image *image = new Image("entityEditor/"+iconFile);
+	Image *image = new Image(core, "entityEditor/"+iconFile);
 	std::shared_ptr<Texture> tex = std::make_shared<Texture>(image, false, false);
 	delete image;
 	iconPrimitive->getShaderPass(0).shaderBinding->setTextureForParam("diffuse", tex);
@@ -1112,8 +1117,8 @@ void EntityEditorMainView::setEditorProps(Entity *entity) {
 			setLinkedEntityPropsRecursive(instance, instance->getChildAtIndex(i));
 			instance->getResourceEntry()->reloadOnFileModify = true;
 			instance->getResourceEntry()->addEventListenerUnique(this, Event::RESOURCE_RELOAD_EVENT);
-			if(!CoreServices::getInstance()->getResourceManager()->getGlobalPool()->hasResource(instance->getResourceEntry())) {
-				CoreServices::getInstance()->getResourceManager()->getGlobalPool()->addResource(instance->getResourceEntry());
+			if(!core->getResourceManager()->getGlobalPool()->hasResource(instance->getResourceEntry())) {
+				core->getResourceManager()->getGlobalPool()->addResource(instance->getResourceEntry());
 			}
 		}
 	}
@@ -1121,22 +1126,16 @@ void EntityEditorMainView::setEditorProps(Entity *entity) {
 	SceneLight *sceneLight = dynamic_cast<SceneLight*>(entity);
 	if(sceneLight) {
 		createIcon(entity, "light_icon.png");
-		LightDisplay *lightVis = new LightDisplay(sceneLight);
-		
-		// TODO: fix this
-		/*
-		if(!sceneLight->getParentScene()) {
-			sceneLight->setParentScene(mainScene);
-			mainScene->addLight(sceneLight);
-		}
-		 */
+		LightDisplay *lightVis = new LightDisplay(core->getResourceManager()->getGlobalPool()->getMaterial("UnlitUntextured"), sceneLight);
+        
+
 	}
 	
 	SceneCurve *sceneCurve = dynamic_cast<SceneCurve*>(entity);
 	if(sceneCurve) {
 		sceneCurve->setBlendingMode(Renderer::BLEND_MODE_NORMAL);
 		sceneCurve->setForceMaterial(true);
-		CurveDisplay *curveVis = new CurveDisplay(mainScene, sceneCurve);
+		CurveDisplay *curveVis = new CurveDisplay(core->getInput(), resourcePool, mainScene, sceneCurve);
 		curveVis->addEventListener(this, InputEvent::EVENT_MOUSEDOWN);
 		createIcon(entity, "curve_icon.png");
 	}
@@ -1153,7 +1152,7 @@ void EntityEditorMainView::setEditorProps(Entity *entity) {
 
 	Camera *camera = dynamic_cast<Camera*>(entity);
 	if(camera) {
-		CameraDisplay *camVis = new CameraDisplay(camera);
+		CameraDisplay *camVis = new CameraDisplay(core->getResourceManager()->getGlobalPool()->getMaterial("UnlitUntextured"), camera);
 		createIcon(entity, "camera_icon.png");
 	}
 	
@@ -1171,7 +1170,7 @@ void EntityEditorMainView::addEntityFromMenu(String command) {
 		sceneObjectRoot->addChild(newPrimitive);
 		setEditorProps(newPrimitive);
 		newPrimitive->setPosition(cursorPosition);
-		newPrimitive->setMaterialByName("Default");
+		newPrimitive->setMaterial(resourcePool->getMaterial("Default"));
 		didPlaceEntity(newPrimitive);
 		selectEntity(newPrimitive, false, false);
 		return;
@@ -1207,7 +1206,7 @@ void EntityEditorMainView::addEntityFromMenu(String command) {
 	}
 
 	if(command == "add_sound") {
-		SceneSound *newSound = new SceneSound("default.wav", 1.0, 2.0);
+		SceneSound *newSound = new SceneSound(core, "default.wav", 1.0, 2.0);
 		sceneObjectRoot->addChild(newSound);
 		setEditorProps(newSound);
 		newSound->setPosition(cursorPosition);
@@ -1243,7 +1242,7 @@ void EntityEditorMainView::addEntityFromMenu(String command) {
 		assetSelectType = "sprite";
 		globalFrame->assetBrowser->addEventListener(this, UIEvent::OK_EVENT);
 		std::vector<ResourcePool*> pools;
-		pools.push_back(CoreServices::getInstance()->getResourceManager()->getGlobalPool());
+		pools.push_back(core->getResourceManager()->getGlobalPool());
 		for(int i=0; i < objectRootInstance->getNumLinkedResourePools(); i++) {
 			pools.push_back(objectRootInstance->getLinkedResourcePoolAtIndex(i));
 		}
@@ -1252,7 +1251,7 @@ void EntityEditorMainView::addEntityFromMenu(String command) {
 	}
 	
 	if(command == "add_label") {
-		SceneLabel	*newLabel = new SceneLabel("TEXT", 12, "sans", Label::ANTIALIAS_FULL, 1.0);
+		SceneLabel	*newLabel = new SceneLabel(resourcePool->getMaterial("Unlit"), "TEXT", 12, resourcePool->getFont("sans"), Label::ANTIALIAS_FULL, 1.0);
 		newLabel->setBlendingMode(Renderer::BLEND_MODE_NORMAL);
 		newLabel->setAnchorPoint(0.0, 0.0, 0.0);
 		newLabel->snapToPixels = false;
@@ -1268,7 +1267,6 @@ void EntityEditorMainView::addEntityFromMenu(String command) {
 	if(command == "add_light") {
 		SceneLight *newLight = new SceneLight(SceneLight::POINT_LIGHT, 1.0);
 		sceneObjectRoot->addChild(newLight);
-		mainScene->addLight(newLight);
 		newLight->enabled = !lightsDisabled;		
 		setEditorProps(newLight);
 		newLight->setLocalBoundingBox(Vector3());
@@ -1375,9 +1373,6 @@ void EntityEditorMainView::deleteSelected(bool doAction) {
 	for(int i=0; i < selectedEntities.size(); i++) {
 		selectedEntities[i]->getParentEntity()->removeChild(selectedEntities[i]);
 		SceneLight *sceneLight = dynamic_cast<SceneLight*>(selectedEntities[i]);
-		if(sceneLight) {
-			mainScene->removeLight(sceneLight);
-		}
 	}
 	
 	for(int i=0; i < selectedEntities.size(); i++) {
@@ -1489,17 +1484,17 @@ void EntityEditorMainView::handleEvent(Event *event) {
 	} else if(event->getDispatcher() == renderTextureShape) {
 		focusSelf();
 	} else if(event->getDispatcher() == trackballCamera) {
-		Update();
-		transformGizmo->Update();
+		Update(0.0);
+		transformGizmo->Update(0.0);
 	} else if(event->getDispatcher() == viewModeSelector) {
 		setEditorMode(viewModeSelector->getSelectedIndex());
 	} else if(event->getDispatcher() == globalFrame->assetBrowser) {
 		if(event->getEventCode() == UIEvent::OK_EVENT) {
 			if(assetSelectType == "mesh") {
-				SceneMesh *newMesh = new SceneMesh(globalFrame->assetBrowser->getSelectedAssetPath());
+				SceneMesh *newMesh = new SceneMesh(resourcePool, globalFrame->assetBrowser->getSelectedAssetPath());
 				sceneObjectRoot->addChild(newMesh);
 				setEditorProps(newMesh);
-				newMesh->setMaterialByName("Default");
+				newMesh->setMaterial(resourcePool->getMaterial("Default"));
 				newMesh->setPosition(cursorPosition);
 				didPlaceEntity(newMesh);
 				selectEntity(newMesh, false, false);
@@ -1523,7 +1518,7 @@ void EntityEditorMainView::handleEvent(Event *event) {
 					selectEntity(newSprite, false, false);
 				}
 			} else if(assetSelectType == "entity") {
-				SceneEntityInstance *newEntity = new SceneEntityInstance(globalFrame->assetBrowser->getSelectedAssetPath());
+				SceneEntityInstance *newEntity = new SceneEntityInstance(core, globalFrame->assetBrowser->getSelectedAssetPath());
 				sceneObjectRoot->addChild(newEntity);
 				setEditorProps(newEntity);
 				newEntity->setPosition(cursorPosition);
@@ -1591,13 +1586,13 @@ void EntityEditorMainView::handleEvent(Event *event) {
 			break;
 			case 1:
 			{
-				ResourcePool *pool = Services()->getResourceManager()->getGlobalPool();
+				ResourcePool *pool = core->getResourceManager()->getGlobalPool();
 				mainScene->setOverrideMaterial(std::static_pointer_cast<Material>(pool->getResource(Resource::RESOURCE_MATERIAL, "Default")));
 			}
 			break;
 			case 2:
 			{
-				ResourcePool *pool = Services()->getResourceManager()->getGlobalPool();
+				ResourcePool *pool = core->getResourceManager()->getGlobalPool();
 				std::shared_ptr<Material> wireframeMaterial = std::static_pointer_cast<Material>(pool->getResource(Resource::RESOURCE_MATERIAL, "UnlitWireframe"));
 				
 				if(!wireframeMaterial->getShaderPass(0).shaderBinding->getLocalParamByName("wireframeColor")) {
@@ -1766,11 +1761,8 @@ void EntityEditorMainView::selectNone(bool doAction) {
 void EntityEditorMainView::disableLighting(bool disable) {
 	
 	lightsDisabled = disable;
-	
-	for(int i=0; i < mainScene->getNumLights(); i++) {
-		SceneLight *light = mainScene->getLight(i);
-		light->enabled = !disable;
-	}
+    
+    
 	
 	if(disable) {
 		customLight1->enabled = true;
@@ -1819,7 +1811,7 @@ void EntityEditorMainView::setOverlayWireframeRecursive(Entity *targetEntity, bo
 		if(material) {
 			if(val) {
 				ShaderPass wireframePass;
-				ResourcePool *pool = Services()->getResourceManager()->getGlobalPool();
+				ResourcePool *pool = core->getResourceManager()->getGlobalPool();
 				wireframePass.shader = std::static_pointer_cast<Shader>(pool->getResource(Resource::RESOURCE_SHADER, "UnlitWireframe"));
 				wireframePass.wireframe = true;
 				wireframePass.shaderBinding = std::make_shared<ShaderBinding>();
@@ -2001,14 +1993,14 @@ void EntityEditorMainView::Resize(Number width, Number height) {
 	mainScene->sceneMouseRect.h = renderTextureShape->getHeight();
 	mainScene->remapMouse = true;
 	
-	Update();
+	Update(0.0);
 }
 
-EntityEditorPropertyContainer::EntityEditorPropertyContainer(PolycodeEditor *editor) : UIElement() {
+EntityEditorPropertyContainer::EntityEditorPropertyContainer(Core *core, ResourcePool *pool, PolycodeEditor *editor) : UIElement(core) {
 	
 	this->editor = editor;
 	
-	propIconSelector = new UIIconSelector();
+	propIconSelector = new UIIconSelector(core, pool);
 	addChild(propIconSelector);
 	propIconSelector->addIcon("entityEditor/properties_icon.png");
 	propIconSelector->addIcon("entityEditor/icon_tree.png");
@@ -2016,19 +2008,19 @@ EntityEditorPropertyContainer::EntityEditorPropertyContainer(PolycodeEditor *edi
 	propIconSelector->setPosition(10.0, 3.0);
 	propIconSelector->addEventListener(this, UIEvent::SELECT_EVENT);
 	
-	propertyView = new EntityEditorPropertyView();
+	propertyView = new EntityEditorPropertyView(core, pool);
 	propertyView->addEventListener(this, PropEvent::EVENT_PROP_CHANGE);
 	addChild(propertyView);
 	propertyView->setPosition(0.0, 30.0);
 	currentView = propertyView;
 	
-	treeView = new EntityEditorTreeView();
+	treeView = new EntityEditorTreeView(core, pool);
 	addChild(treeView);
 	treeView->setPosition(0.0, 30.0);
 	treeView->visible = false;
 	treeView->enabled = false;
 	
-	settingsView = new EntityEditorSettingsView();
+	settingsView = new EntityEditorSettingsView(core, pool);
 	addChild(settingsView);
 	settingsView->setPosition(0.0, 30.0);
 	settingsView->visible = false;
@@ -2072,17 +2064,17 @@ void EntityEditorPropertyContainer::Resize(Number width, Number height) {
 }
 
 
-PolycodeEntityEditor::PolycodeEntityEditor() : PolycodeEditor(true){
-	mainSizer = new UIHSizer(300, 300, 300, false);
+PolycodeEntityEditor::PolycodeEntityEditor(Core *core, ResourcePool *pool) : PolycodeEditor(core, pool, true){
+	mainSizer = new UIHSizer(core, pool, 300, 300, 300, false);
 	addChild(mainSizer);
 	
-	mainView = new EntityEditorMainView(this);
+	mainView = new EntityEditorMainView(core, pool, this);
 	mainView->addEventListener(this, Event::CHANGE_EVENT);
 	mainSizer->addLeftChild(mainView);
 	
 	mainSizer->setMinimumSize(200);
 	
-	propertyContainer = new EntityEditorPropertyContainer(this);
+	propertyContainer = new EntityEditorPropertyContainer(core, pool, this);
 	propertyView = propertyContainer->propertyView;
 	treeView = propertyContainer->treeView;
 	settingsView = propertyContainer->settingsView;
@@ -2147,7 +2139,7 @@ PolycodeEntityEditor::~PolycodeEntityEditor() {
 bool PolycodeEntityEditor::openFile(OSFileEntry filePath) { 
 	PolycodeEditor::openFile(filePath);
 //	  return true;
-	loadedInstance = new SceneEntityInstance(filePath.fullPath);
+	loadedInstance = new SceneEntityInstance(core, filePath.fullPath);
 	
 	// disable sounds :)
 	for(int i=0; i < loadedInstance->getNumChildren(); i++) {
@@ -2431,7 +2423,6 @@ void PolycodeEntityEditor::saveEntityToObjectEntry(Entity *entity, ObjectEntry *
 			meshEntry->addChild("file", sceneMesh->getFilename().replace(parentProject->getRootFolder()+"/", ""));
 		}
 
-		meshEntry->addChild("alphaTest", sceneMesh->alphaTest);
 		meshEntry->addChild("backfaceCulled", sceneMesh->backfaceCulled);
 		meshEntry->addChild("sendBoneMatricesToMaterial", sceneMesh->sendBoneMatricesToMaterial);
 		
@@ -2496,7 +2487,7 @@ void PolycodeEntityEditor::saveShaderOptionsToEntry(ObjectEntry *entry, Material
 					if(binding->getLocalParamByName(shader->expectedParams[j].name)) {
 						ObjectEntry *paramEntry = paramsEntry->addChild("param");
 						paramEntry->addChild("name", shader->expectedParams[j].name);
-						paramEntry->addChild("value", PolycodeMaterialEditor::createStringValue(shader->expectedParams[j].type, binding->getLocalParamByName(shader->expectedParams[j].name)->data));
+						paramEntry->addChild("value", PolycodeMaterialEditor::createStringValue(binding->getLocalParamByName(shader->expectedParams[j].name)));
 					}
 				}
 			}
@@ -2577,7 +2568,7 @@ void PolycodeEntityEditor::saveFile() {
 	saveEntityToObjectEntry(mainView->getObjectRoot(), children);
 	
 	
-	saveObject.saveToXML(filePath);
+	saveObject.saveToXML(core, filePath);
 	setHasChanges(false);
 }
 

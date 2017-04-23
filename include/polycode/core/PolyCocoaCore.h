@@ -46,13 +46,6 @@ using std::vector;
 
 namespace Polycode {
 	
-	class _PolyExport PosixMutex : public CoreMutex {
-	public:
-		void lock();
-		void unlock();
-		pthread_mutex_t pMutex;
-	};
-	
 	class CocoaEvent {
 	public:
 		int eventGroup;
@@ -149,8 +142,6 @@ namespace Polycode {
 		
 		void makeApplicationMain();
 		
-		CoreMutex *createMutex();		
-		
 		void checkEvents();		
 		
 		int lastMouseY;
@@ -173,6 +164,7 @@ namespace Polycode {
 		
 	protected:
 	
+		PAAudioInterface *audioInterface;
 		PolycodeView *glView;
 		uint64_t initTime;
 		bool retinaSupport;

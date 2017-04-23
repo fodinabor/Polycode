@@ -1,6 +1,5 @@
 #include "polycode/bindings/lua/PolycodeLua.h"
 #include "polycode/bindings/lua/PolycodeLuaWrappers.h"
-#include "polycode/core/PolyCoreServices.h"
 
 using namespace Polycode;
 
@@ -94,7 +93,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"Camera_createProjectionMatrix", Polycode_Camera_createProjectionMatrix},
 		{"Camera_hasFilterShader", Polycode_Camera_hasFilterShader},
 		{"Camera_setPostFilter", Polycode_Camera_setPostFilter},
-		{"Camera_setPostFilterByName", Polycode_Camera_setPostFilterByName},
 		{"Camera_removePostFilter", Polycode_Camera_removePostFilter},
 		{"Camera_getScreenShaderMaterial", Polycode_Camera_getScreenShaderMaterial},
 		{"Camera_getProjectionMatrix", Polycode_Camera_getProjectionMatrix},
@@ -219,6 +217,7 @@ int luaopen_Polycode(lua_State *L) {
 		{"Core_getDefaultWorkingDirectory", Polycode_Core_getDefaultWorkingDirectory},
 		{"Core_getUserHomeDirectory", Polycode_Core_getUserHomeDirectory},
 		{"Core_makeApplicationMain", Polycode_Core_makeApplicationMain},
+		{"Core_getConfig", Polycode_Core_getConfig},
 		{"delete_Core", Polycode_delete_Core},
 		{"VideoModeChangeInfo_get_xRes", Polycode_VideoModeChangeInfo_get_xRes},
 		{"VideoModeChangeInfo_get_yRes", Polycode_VideoModeChangeInfo_get_yRes},
@@ -303,14 +302,12 @@ int luaopen_Polycode(lua_State *L) {
 		{"CoreInput_get_simulateTouchWithMouse", Polycode_CoreInput_get_simulateTouchWithMouse},
 		{"CoreInput_get_simulateTouchAsPen", Polycode_CoreInput_get_simulateTouchAsPen},
 		{"CoreInput_get_simulateMouseWithTouch", Polycode_CoreInput_get_simulateMouseWithTouch},
-		{"CoreInput_get_ignoreOffScreenTouch", Polycode_CoreInput_get_ignoreOffScreenTouch},
 		{"CoreInput_get_keyRepeat", Polycode_CoreInput_get_keyRepeat},
 		{"CoreInput_get_mousePosition", Polycode_CoreInput_get_mousePosition},
 		{"CoreInput_get_deltaMousePosition", Polycode_CoreInput_get_deltaMousePosition},
 		{"CoreInput_set_simulateTouchWithMouse", Polycode_CoreInput_set_simulateTouchWithMouse},
 		{"CoreInput_set_simulateTouchAsPen", Polycode_CoreInput_set_simulateTouchAsPen},
 		{"CoreInput_set_simulateMouseWithTouch", Polycode_CoreInput_set_simulateMouseWithTouch},
-		{"CoreInput_set_ignoreOffScreenTouch", Polycode_CoreInput_set_ignoreOffScreenTouch},
 		{"CoreInput_set_keyRepeat", Polycode_CoreInput_set_keyRepeat},
 		{"CoreInput_set_mousePosition", Polycode_CoreInput_set_mousePosition},
 		{"CoreInput_set_deltaMousePosition", Polycode_CoreInput_set_deltaMousePosition},
@@ -345,15 +342,9 @@ int luaopen_Polycode(lua_State *L) {
 		{"JoystickInfo_set_deviceIndex", Polycode_JoystickInfo_set_deviceIndex},
 		{"JoystickInfo", Polycode_JoystickInfo},
 		{"delete_JoystickInfo", Polycode_delete_JoystickInfo},
-		{"CoreServices_createInstance", Polycode_CoreServices_createInstance},
-		{"CoreServices_Update", Polycode_CoreServices_Update},
-		{"CoreServices_fixedUpdate", Polycode_CoreServices_fixedUpdate},
-		{"delete_CoreServices", Polycode_delete_CoreServices},
 		{"Data", Polycode_Data},
-		{"Data_loadFromFile", Polycode_Data_loadFromFile},
 		{"Data_getAsString", Polycode_Data_getAsString},
 		{"Data_setFromString", Polycode_Data_setFromString},
-		{"Data_saveToFile", Polycode_Data_saveToFile},
 		{"delete_Data", Polycode_delete_Data},
 		{"MouseEventResult_get_hit", Polycode_MouseEventResult_get_hit},
 		{"MouseEventResult_get_blocked", Polycode_MouseEventResult_get_blocked},
@@ -399,6 +390,7 @@ int luaopen_Polycode(lua_State *L) {
 		{"Entity_get_mouseOver", Polycode_Entity_get_mouseOver},
 		{"Entity_get_rendererVis", Polycode_Entity_get_rendererVis},
 		{"Entity_get_layerID", Polycode_Entity_get_layerID},
+		{"Entity_get_castShadows", Polycode_Entity_get_castShadows},
 		{"Entity_set_ownsChildren", Polycode_Entity_set_ownsChildren},
 		{"Entity_set_billboardMode", Polycode_Entity_set_billboardMode},
 		{"Entity_set_color", Polycode_Entity_set_color},
@@ -420,6 +412,7 @@ int luaopen_Polycode(lua_State *L) {
 		{"Entity_set_mouseOver", Polycode_Entity_set_mouseOver},
 		{"Entity_set_rendererVis", Polycode_Entity_set_rendererVis},
 		{"Entity_set_layerID", Polycode_Entity_set_layerID},
+		{"Entity_set_castShadows", Polycode_Entity_set_castShadows},
 		{"Entity", Polycode_Entity},
 		{"Entity_initEntity", Polycode_Entity_initEntity},
 		{"Entity_Update", Polycode_Entity_Update},
@@ -576,7 +569,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"GPUDrawOptions_get_depthTest", Polycode_GPUDrawOptions_get_depthTest},
 		{"GPUDrawOptions_get_depthWrite", Polycode_GPUDrawOptions_get_depthWrite},
 		{"GPUDrawOptions_get_linePointSize", Polycode_GPUDrawOptions_get_linePointSize},
-		{"GPUDrawOptions_get_alphaTest", Polycode_GPUDrawOptions_get_alphaTest},
 		{"GPUDrawOptions_get_backfaceCull", Polycode_GPUDrawOptions_get_backfaceCull},
 		{"GPUDrawOptions_get_depthOnly", Polycode_GPUDrawOptions_get_depthOnly},
 		{"GPUDrawOptions_get_forceMaterial", Polycode_GPUDrawOptions_get_forceMaterial},
@@ -587,7 +579,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"GPUDrawOptions_set_depthTest", Polycode_GPUDrawOptions_set_depthTest},
 		{"GPUDrawOptions_set_depthWrite", Polycode_GPUDrawOptions_set_depthWrite},
 		{"GPUDrawOptions_set_linePointSize", Polycode_GPUDrawOptions_set_linePointSize},
-		{"GPUDrawOptions_set_alphaTest", Polycode_GPUDrawOptions_set_alphaTest},
 		{"GPUDrawOptions_set_backfaceCull", Polycode_GPUDrawOptions_set_backfaceCull},
 		{"GPUDrawOptions_set_depthOnly", Polycode_GPUDrawOptions_set_depthOnly},
 		{"GPUDrawOptions_set_forceMaterial", Polycode_GPUDrawOptions_set_forceMaterial},
@@ -604,6 +595,7 @@ int luaopen_Polycode(lua_State *L) {
 		{"GPUDrawBuffer_get_clearColorBuffer", Polycode_GPUDrawBuffer_get_clearColorBuffer},
 		{"GPUDrawBuffer_get_backingResolutionScale", Polycode_GPUDrawBuffer_get_backingResolutionScale},
 		{"GPUDrawBuffer_get_viewport", Polycode_GPUDrawBuffer_get_viewport},
+		{"GPUDrawBuffer_get_shadowMapPass", Polycode_GPUDrawBuffer_get_shadowMapPass},
 		{"GPUDrawBuffer_set_projectionMatrix", Polycode_GPUDrawBuffer_set_projectionMatrix},
 		{"GPUDrawBuffer_set_viewMatrix", Polycode_GPUDrawBuffer_set_viewMatrix},
 		{"GPUDrawBuffer_set_cameraMatrix", Polycode_GPUDrawBuffer_set_cameraMatrix},
@@ -612,11 +604,9 @@ int luaopen_Polycode(lua_State *L) {
 		{"GPUDrawBuffer_set_clearColorBuffer", Polycode_GPUDrawBuffer_set_clearColorBuffer},
 		{"GPUDrawBuffer_set_backingResolutionScale", Polycode_GPUDrawBuffer_set_backingResolutionScale},
 		{"GPUDrawBuffer_set_viewport", Polycode_GPUDrawBuffer_set_viewport},
+		{"GPUDrawBuffer_set_shadowMapPass", Polycode_GPUDrawBuffer_set_shadowMapPass},
 		{"GPUDrawBuffer", Polycode_GPUDrawBuffer},
 		{"delete_GPUDrawBuffer", Polycode_delete_GPUDrawBuffer},
-		{"Image", Polycode_Image},
-		{"Image_loadImage", Polycode_Image_loadImage},
-		{"Image_saveImage", Polycode_Image_saveImage},
 		{"Image_createEmpty", Polycode_Image_createEmpty},
 		{"Image_fill", Polycode_Image_fill},
 		{"Image_setPixel", Polycode_Image_setPixel},
@@ -637,7 +627,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"Image_getWidth", Polycode_Image_getWidth},
 		{"Image_getHeight", Polycode_Image_getHeight},
 		{"Image_premultiplyAlpha", Polycode_Image_premultiplyAlpha},
-		{"Image_savePNG", Polycode_Image_savePNG},
 		{"delete_Image", Polycode_delete_Image},
 		{"TouchInfo_get_id", Polycode_TouchInfo_get_id},
 		{"TouchInfo_get_position", Polycode_TouchInfo_get_position},
@@ -728,6 +717,7 @@ int luaopen_Polycode(lua_State *L) {
 		{"Material_set_screenMaterial", Polycode_Material_set_screenMaterial},
 		{"Material", Polycode_Material},
 		{"Material_addShaderPass", Polycode_Material_addShaderPass},
+		{"Material_addShaderPassForShader", Polycode_Material_addShaderPassForShader},
 		{"Material_addShaderPassAtIndex", Polycode_Material_addShaderPassAtIndex},
 		{"Material_getNumShaderPasses", Polycode_Material_getNumShaderPasses},
 		{"Material_removeShaderPass", Polycode_Material_removeShaderPass},
@@ -768,8 +758,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"Matrix4_setProjection", Polycode_Matrix4_setProjection},
 		{"delete_Matrix4", Polycode_delete_Matrix4},
 		{"Mesh", Polycode_Mesh},
-		{"Mesh_loadMesh", Polycode_Mesh_loadMesh},
-		{"Mesh_saveToFile", Polycode_Mesh_saveToFile},
 		{"Mesh_addSubmesh", Polycode_Mesh_addSubmesh},
 		{"Mesh_removeSubmeshAtIndex", Polycode_Mesh_removeSubmeshAtIndex},
 		{"Mesh_getNumSubmeshes", Polycode_Mesh_getNumSubmeshes},
@@ -1009,8 +997,10 @@ int luaopen_Polycode(lua_State *L) {
 		{"delete_Rectangle", Polycode_delete_Rectangle},
 		{"RenderDataArray_get_type", Polycode_RenderDataArray_get_type},
 		{"RenderDataArray_get_customArrayName", Polycode_RenderDataArray_get_customArrayName},
+		{"RenderDataArray_get_platformData", Polycode_RenderDataArray_get_platformData},
 		{"RenderDataArray_set_type", Polycode_RenderDataArray_set_type},
 		{"RenderDataArray_set_customArrayName", Polycode_RenderDataArray_set_customArrayName},
+		{"RenderDataArray_set_platformData", Polycode_RenderDataArray_set_platformData},
 		{"RenderDataArray", Polycode_RenderDataArray},
 		{"RenderDataArray_getDataSize", Polycode_RenderDataArray_getDataSize},
 		{"delete_RenderDataArray", Polycode_delete_RenderDataArray},
@@ -1050,12 +1040,17 @@ int luaopen_Polycode(lua_State *L) {
 		{"Renderer_unProject", Polycode_Renderer_unProject},
 		{"Renderer_project", Polycode_Renderer_project},
 		{"delete_Renderer", Polycode_delete_Renderer},
+		{"RendererPlatformData_get_type", Polycode_RendererPlatformData_get_type},
+		{"RendererPlatformData_set_type", Polycode_RendererPlatformData_set_type},
+		{"RendererPlatformData", Polycode_RendererPlatformData},
+		{"delete_RendererPlatformData", Polycode_delete_RendererPlatformData},
 		{"Resource_get_reloadOnFileModify", Polycode_Resource_get_reloadOnFileModify},
 		{"Resource_get_resourceFileTime", Polycode_Resource_get_resourceFileTime},
+		{"Resource_get_platformData", Polycode_Resource_get_platformData},
 		{"Resource_set_reloadOnFileModify", Polycode_Resource_set_reloadOnFileModify},
 		{"Resource_set_resourceFileTime", Polycode_Resource_set_resourceFileTime},
+		{"Resource_set_platformData", Polycode_Resource_set_platformData},
 		{"Resource", Polycode_Resource},
-		{"Resource_reloadResource", Polycode_Resource_reloadResource},
 		{"Resource_getResourceName", Polycode_Resource_getResourceName},
 		{"Resource_getResourceType", Polycode_Resource_getResourceType},
 		{"Resource_setResourceName", Polycode_Resource_setResourceName},
@@ -1081,6 +1076,11 @@ int luaopen_Polycode(lua_State *L) {
 		{"ResourcePool_loadResource", Polycode_ResourcePool_loadResource},
 		{"ResourcePool_loadResourceWithName", Polycode_ResourcePool_loadResourceWithName},
 		{"ResourcePool_getResource", Polycode_ResourcePool_getResource},
+		{"ResourcePool_getFont", Polycode_ResourcePool_getFont},
+		{"ResourcePool_getMaterial", Polycode_ResourcePool_getMaterial},
+		{"ResourcePool_getShader", Polycode_ResourcePool_getShader},
+		{"ResourcePool_loadTexture", Polycode_ResourcePool_loadTexture},
+		{"ResourcePool_loadMesh", Polycode_ResourcePool_loadMesh},
 		{"ResourcePool_getName", Polycode_ResourcePool_getName},
 		{"ResourcePool_setName", Polycode_ResourcePool_setName},
 		{"ResourcePool_loadFont", Polycode_ResourcePool_loadFont},
@@ -1141,18 +1141,15 @@ int luaopen_Polycode(lua_State *L) {
 		{"Scene_isEnabled", Polycode_Scene_isEnabled},
 		{"Scene_setEnabled", Polycode_Scene_setEnabled},
 		{"Scene_setOverrideMaterial", Polycode_Scene_setOverrideMaterial},
-		{"Scene_getNumLights", Polycode_Scene_getNumLights},
 		{"Scene_doVisibilityChecking", Polycode_Scene_doVisibilityChecking},
 		{"Scene_doesVisibilityChecking", Polycode_Scene_doesVisibilityChecking},
 		{"delete_Scene", Polycode_delete_Scene},
 		{"SceneEntityInstanceResourceEntry", Polycode_SceneEntityInstanceResourceEntry},
-		{"SceneEntityInstanceResourceEntry_reloadResource", Polycode_SceneEntityInstanceResourceEntry_reloadResource},
 		{"delete_SceneEntityInstanceResourceEntry", Polycode_delete_SceneEntityInstanceResourceEntry},
 		{"SceneEntityInstance_get_cloneUsingReload", Polycode_SceneEntityInstance_get_cloneUsingReload},
 		{"SceneEntityInstance_get_fileName", Polycode_SceneEntityInstance_get_fileName},
 		{"SceneEntityInstance_set_cloneUsingReload", Polycode_SceneEntityInstance_set_cloneUsingReload},
 		{"SceneEntityInstance_set_fileName", Polycode_SceneEntityInstance_set_fileName},
-		{"SceneEntityInstance", Polycode_SceneEntityInstance},
 		{"SceneEntityInstance_reloadEntityInstance", Polycode_SceneEntityInstance_reloadEntityInstance},
 		{"SceneEntityInstance_clearInstance", Polycode_SceneEntityInstance_clearInstance},
 		{"SceneEntityInstance_loadFromFile", Polycode_SceneEntityInstance_loadFromFile},
@@ -1213,7 +1210,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"SceneCurve_set_curveResolution", Polycode_SceneCurve_set_curveResolution},
 		{"SceneCurve", Polycode_SceneCurve},
 		{"SceneCurve_getWorldPointAt", Polycode_SceneCurve_getWorldPointAt},
-		{"SceneCurve_Update", Polycode_SceneCurve_Update},
 		{"delete_SceneCurve", Polycode_delete_SceneCurve},
 		{"SceneLine", Polycode_SceneLine},
 		{"SceneLine_setStart", Polycode_SceneLine_setStart},
@@ -1224,14 +1220,12 @@ int luaopen_Polycode(lua_State *L) {
 		{"SceneMesh_get_lineSmooth", Polycode_SceneMesh_get_lineSmooth},
 		{"SceneMesh_get_pointSmooth", Polycode_SceneMesh_get_pointSmooth},
 		{"SceneMesh_get_useGeometryHitDetection", Polycode_SceneMesh_get_useGeometryHitDetection},
-		{"SceneMesh_get_alphaTest", Polycode_SceneMesh_get_alphaTest},
 		{"SceneMesh_get_backfaceCulled", Polycode_SceneMesh_get_backfaceCulled},
 		{"SceneMesh_get_sendBoneMatricesToMaterial", Polycode_SceneMesh_get_sendBoneMatricesToMaterial},
 		{"SceneMesh_set_lineWidth", Polycode_SceneMesh_set_lineWidth},
 		{"SceneMesh_set_lineSmooth", Polycode_SceneMesh_set_lineSmooth},
 		{"SceneMesh_set_pointSmooth", Polycode_SceneMesh_set_pointSmooth},
 		{"SceneMesh_set_useGeometryHitDetection", Polycode_SceneMesh_set_useGeometryHitDetection},
-		{"SceneMesh_set_alphaTest", Polycode_SceneMesh_set_alphaTest},
 		{"SceneMesh_set_backfaceCulled", Polycode_SceneMesh_set_backfaceCulled},
 		{"SceneMesh_set_sendBoneMatricesToMaterial", Polycode_SceneMesh_set_sendBoneMatricesToMaterial},
 		{"SceneMesh", Polycode_SceneMesh},
@@ -1241,7 +1235,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"SceneMesh_removeShaderPass", Polycode_SceneMesh_removeShaderPass},
 		{"SceneMesh_getMesh", Polycode_SceneMesh_getMesh},
 		{"SceneMesh_getMaterial", Polycode_SceneMesh_getMaterial},
-		{"SceneMesh_loadSkeleton", Polycode_SceneMesh_loadSkeleton},
 		{"SceneMesh_clearMaterial", Polycode_SceneMesh_clearMaterial},
 		{"SceneMesh_setMaterial", Polycode_SceneMesh_setMaterial},
 		{"SceneMesh_setMesh", Polycode_SceneMesh_setMesh},
@@ -1250,7 +1243,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"SceneMesh_setLineWidth", Polycode_SceneMesh_setLineWidth},
 		{"SceneMesh_getFilename", Polycode_SceneMesh_getFilename},
 		{"SceneMesh_setFilename", Polycode_SceneMesh_setFilename},
-		{"SceneMesh_loadFromFile", Polycode_SceneMesh_loadFromFile},
 		{"SceneMesh_customHitDetection", Polycode_SceneMesh_customHitDetection},
 		{"SceneMesh_setForceMaterial", Polycode_SceneMesh_setForceMaterial},
 		{"SceneMesh_getForceMaterial", Polycode_SceneMesh_getForceMaterial},
@@ -1421,13 +1413,11 @@ int luaopen_Polycode(lua_State *L) {
 		{"LocalShaderParam_getTexture", Polycode_LocalShaderParam_getTexture},
 		{"LocalShaderParam_setCubemap", Polycode_LocalShaderParam_setCubemap},
 		{"LocalShaderParam_getCubemap", Polycode_LocalShaderParam_getCubemap},
-		{"LocalShaderParam_setParamValueFromString", Polycode_LocalShaderParam_setParamValueFromString},
 		{"delete_LocalShaderParam", Polycode_delete_LocalShaderParam},
 		{"ShaderProgram_get_type", Polycode_ShaderProgram_get_type},
 		{"ShaderProgram_set_type", Polycode_ShaderProgram_set_type},
 		{"ShaderProgram", Polycode_ShaderProgram},
 		{"ShaderProgram_reloadProgram", Polycode_ShaderProgram_reloadProgram},
-		{"ShaderProgram_reloadResource", Polycode_ShaderProgram_reloadResource},
 		{"delete_ShaderProgram", Polycode_delete_ShaderProgram},
 		{"AttributeBinding_get_name", Polycode_AttributeBinding_get_name},
 		{"AttributeBinding_get_enabled", Polycode_AttributeBinding_get_enabled},
@@ -1437,12 +1427,10 @@ int luaopen_Polycode(lua_State *L) {
 		{"delete_AttributeBinding", Polycode_delete_AttributeBinding},
 		{"ShaderBinding", Polycode_ShaderBinding},
 		{"ShaderBinding_addParam", Polycode_ShaderBinding_addParam},
-		{"ShaderBinding_addParamFromData", Polycode_ShaderBinding_addParamFromData},
 		{"ShaderBinding_getNumLocalParams", Polycode_ShaderBinding_getNumLocalParams},
 		{"ShaderBinding_getLocalParam", Polycode_ShaderBinding_getLocalParam},
 		{"ShaderBinding_getLocalParamByName", Polycode_ShaderBinding_getLocalParamByName},
 		{"ShaderBinding_removeParam", Polycode_ShaderBinding_removeParam},
-		{"ShaderBinding_loadTextureForParam", Polycode_ShaderBinding_loadTextureForParam},
 		{"ShaderBinding_setTextureForParam", Polycode_ShaderBinding_setTextureForParam},
 		{"ShaderBinding_setCubemapForParam", Polycode_ShaderBinding_setCubemapForParam},
 		{"ShaderBinding_getNumAttributeBindings", Polycode_ShaderBinding_getNumAttributeBindings},
@@ -1464,11 +1452,9 @@ int luaopen_Polycode(lua_State *L) {
 		{"SkeletonAnimation_isPlaying", Polycode_SkeletonAnimation_isPlaying},
 		{"delete_SkeletonAnimation", Polycode_delete_SkeletonAnimation},
 		{"Skeleton", Polycode_Skeleton},
-		{"Skeleton_loadSkeleton", Polycode_Skeleton_loadSkeleton},
 		{"Skeleton_playAnimationByName", Polycode_Skeleton_playAnimationByName},
 		{"Skeleton_setBaseAnimationByName", Polycode_Skeleton_setBaseAnimationByName},
 		{"Skeleton_stopAllAnimations", Polycode_Skeleton_stopAllAnimations},
-		{"Skeleton_addAnimation", Polycode_Skeleton_addAnimation},
 		{"Skeleton_stopAnimationByName", Polycode_Skeleton_stopAnimationByName},
 		{"Skeleton_Update", Polycode_Skeleton_Update},
 		{"Skeleton_getBoneByName", Polycode_Skeleton_getBoneByName},
@@ -1496,7 +1482,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"delete_BoneTrack", Polycode_delete_BoneTrack},
 		{"Sound", Polycode_Sound},
 		{"Sound_getSampleAsNumber", Polycode_Sound_getSampleAsNumber},
-		{"Sound_loadFile", Polycode_Sound_loadFile},
 		{"Sound_Play", Polycode_Sound_Play},
 		{"Sound_Stop", Polycode_Sound_Stop},
 		{"Sound_setVolume", Polycode_Sound_setVolume},
@@ -1522,8 +1507,6 @@ int luaopen_Polycode(lua_State *L) {
 		{"Sound_setMaxDistance", Polycode_Sound_setMaxDistance},
 		{"Sound_getReferenceDistance", Polycode_Sound_getReferenceDistance},
 		{"Sound_getMaxDistance", Polycode_Sound_getMaxDistance},
-		{"Sound_loadWAV", Polycode_Sound_loadWAV},
-		{"Sound_loadOGG", Polycode_Sound_loadOGG},
 		{"Sound_soundCheck", Polycode_Sound_soundCheck},
 		{"Sound_updateStream", Polycode_Sound_updateStream},
 		{"delete_Sound", Polycode_delete_Sound},
@@ -1572,6 +1555,10 @@ int luaopen_Polycode(lua_State *L) {
 		{"String_isNumber", Polycode_String_isNumber},
 		{"String_isInteger", Polycode_String_isInteger},
 		{"delete_String", Polycode_delete_String},
+		{"RenderBuffer_get_platformData", Polycode_RenderBuffer_get_platformData},
+		{"RenderBuffer_get_depthBufferPlatformData", Polycode_RenderBuffer_get_depthBufferPlatformData},
+		{"RenderBuffer_set_platformData", Polycode_RenderBuffer_set_platformData},
+		{"RenderBuffer_set_depthBufferPlatformData", Polycode_RenderBuffer_set_depthBufferPlatformData},
 		{"RenderBuffer", Polycode_RenderBuffer},
 		{"RenderBuffer_getWidth", Polycode_RenderBuffer_getWidth},
 		{"RenderBuffer_getHeight", Polycode_RenderBuffer_getHeight},
@@ -1590,22 +1577,11 @@ int luaopen_Polycode(lua_State *L) {
 		{"Texture_set_anisotropy", Polycode_Texture_set_anisotropy},
 		{"Texture_set_framebufferTexture", Polycode_Texture_set_framebufferTexture},
 		{"Texture_set_depthTexture", Polycode_Texture_set_depthTexture},
-		{"Texture_reloadResource", Polycode_Texture_reloadResource},
 		{"Texture_getWidth", Polycode_Texture_getWidth},
 		{"Texture_getHeight", Polycode_Texture_getHeight},
 		{"Texture_setCreateMipmaps", Polycode_Texture_setCreateMipmaps},
 		{"Texture_getCreateMipmaps", Polycode_Texture_getCreateMipmaps},
 		{"delete_Texture", Polycode_delete_Texture},
-		{"Timer", Polycode_Timer},
-		{"Timer_Pause", Polycode_Timer_Pause},
-		{"Timer_isPaused", Polycode_Timer_isPaused},
-		{"Timer_getTicks", Polycode_Timer_getTicks},
-		{"Timer_Update", Polycode_Timer_Update},
-		{"Timer_Reset", Polycode_Timer_Reset},
-		{"Timer_hasElapsed", Polycode_Timer_hasElapsed},
-		{"Timer_getElapsedf", Polycode_Timer_getElapsedf},
-		{"Timer_setTimerInterval", Polycode_Timer_setTimerInterval},
-		{"delete_Timer", Polycode_delete_Timer},
 		{"Vector2_get_x", Polycode_Vector2_get_x},
 		{"Vector2_get_y", Polycode_Vector2_get_y},
 		{"Vector2_set_x", Polycode_Vector2_set_x},
@@ -1749,12 +1725,6 @@ int luaopen_Polycode(lua_State *L) {
 	luaL_newmetatable(L, "Polycode.JoystickInfo");
 	lua_pushstring(L, "__gc");
 	lua_pushcfunction(L, Polycode_delete_JoystickInfo);
-	lua_settable(L, -3);
-	lua_pop(L, 1);
-
-	luaL_newmetatable(L, "Polycode.CoreServices");
-	lua_pushstring(L, "__gc");
-	lua_pushcfunction(L, Polycode_delete_CoreServices);
 	lua_settable(L, -3);
 	lua_pop(L, 1);
 
@@ -1992,6 +1962,12 @@ int luaopen_Polycode(lua_State *L) {
 	luaL_newmetatable(L, "Polycode.Renderer");
 	lua_pushstring(L, "__gc");
 	lua_pushcfunction(L, Polycode_delete_Renderer);
+	lua_settable(L, -3);
+	lua_pop(L, 1);
+
+	luaL_newmetatable(L, "Polycode.RendererPlatformData");
+	lua_pushstring(L, "__gc");
+	lua_pushcfunction(L, Polycode_delete_RendererPlatformData);
 	lua_settable(L, -3);
 	lua_pop(L, 1);
 
@@ -2251,12 +2227,6 @@ int luaopen_Polycode(lua_State *L) {
 	lua_pop(L, 1);
 
 	luaL_newmetatable(L, "Polycode.Texture");
-	lua_pop(L, 1);
-
-	luaL_newmetatable(L, "Polycode.Timer");
-	lua_pushstring(L, "__gc");
-	lua_pushcfunction(L, Polycode_delete_Timer);
-	lua_settable(L, -3);
 	lua_pop(L, 1);
 
 	luaL_newmetatable(L, "Polycode.Vector2");

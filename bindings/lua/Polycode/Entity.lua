@@ -62,6 +62,8 @@ function Entity:__getvar(name)
 		local __c = _G["char"]("__skip_ptr__")
 		__c.__ptr = retVal
 		return __c
+	elseif name == "castShadows" then
+		return Polycode.Entity_get_castShadows(self.__ptr)
 	end
 	if EventDispatcher["__getvar"] ~= nil then
 		return EventDispatcher.__getvar(self, name)
@@ -132,6 +134,9 @@ function Entity:__setvar(name,value)
 	elseif name == "layerID" then
 		Polycode.Entity_set_layerID(self.__ptr, value.__ptr)
 		return true
+	elseif name == "castShadows" then
+		Polycode.Entity_set_castShadows(self.__ptr, value)
+		return true
 	end
 	if EventDispatcher["__setvar"] ~= nil then
 		return EventDispatcher.__setvar(self, name, value)
@@ -163,8 +168,8 @@ function Entity:initEntity()
 	local retVal =  Polycode.Entity_initEntity(self.__ptr)
 end
 
-function Entity:Update()
-	local retVal =  Polycode.Entity_Update(self.__ptr)
+function Entity:Update(elapsed)
+	local retVal = Polycode.Entity_Update(self.__ptr, elapsed)
 end
 
 function Entity:fixedUpdate()
@@ -545,8 +550,8 @@ function Entity:getInverseY()
 	return retVal
 end
 
-function Entity:doUpdates()
-	local retVal =  Polycode.Entity_doUpdates(self.__ptr)
+function Entity:doUpdates(elapsed)
+	local retVal = Polycode.Entity_doUpdates(self.__ptr, elapsed)
 end
 
 function Entity:doFixedUpdates()

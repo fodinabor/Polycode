@@ -25,6 +25,7 @@
 #include "polycode/core/PolyVector3.h"
 #include "polycode/core/PolyQuaternion.h"
 #include "polycode/core/PolySound.h"
+#include <mutex>
 
 #define POLY_FRAMES_PER_BUFFER 2048
 #define POLY_AUDIO_FREQ 44100
@@ -34,6 +35,8 @@
 
 namespace Polycode {
 	
+    class CoreMutex;
+    
 	class _PolyExport AudioMixer {
 		public:
 
@@ -45,12 +48,13 @@ namespace Polycode {
 			Number globalVolume;
 			Vector3 listenerPosition;
 			Quaternion listenerOrientation;
-			CoreMutex *mixerMutex;
+            std::mutex POLYIGNORE mixerMutex;
 	};
 	
 	class _PolyExport AudioInterface {
 		public:
 			AudioInterface();
+			virtual ~AudioInterface();
 			//void addToBuffer(int16_t *data, unsigned int count);
 			virtual void setMixer(AudioMixer *mixer);
 			AudioMixer *getMixer();		   

@@ -12,8 +12,6 @@ function SceneMesh:__getvar(name)
 		return Polycode.SceneMesh_get_pointSmooth(self.__ptr)
 	elseif name == "useGeometryHitDetection" then
 		return Polycode.SceneMesh_get_useGeometryHitDetection(self.__ptr)
-	elseif name == "alphaTest" then
-		return Polycode.SceneMesh_get_alphaTest(self.__ptr)
 	elseif name == "backfaceCulled" then
 		return Polycode.SceneMesh_get_backfaceCulled(self.__ptr)
 	elseif name == "sendBoneMatricesToMaterial" then
@@ -36,9 +34,6 @@ function SceneMesh:__setvar(name,value)
 		return true
 	elseif name == "useGeometryHitDetection" then
 		Polycode.SceneMesh_set_useGeometryHitDetection(self.__ptr, value)
-		return true
-	elseif name == "alphaTest" then
-		Polycode.SceneMesh_set_alphaTest(self.__ptr, value)
 		return true
 	elseif name == "backfaceCulled" then
 		Polycode.SceneMesh_set_backfaceCulled(self.__ptr, value)
@@ -110,14 +105,6 @@ function SceneMesh:getMaterial()
 	return __c
 end
 
-function SceneMesh:loadSkeleton(fileName)
-	local retVal = Polycode.SceneMesh_loadSkeleton(self.__ptr, fileName)
-	if retVal == nil then return nil end
-	local __c = _G["shared_ptr<Skeleton>"]("__skip_ptr__")
-	__c.__ptr = retVal
-	return __c
-end
-
 function SceneMesh:clearMaterial()
 	local retVal =  Polycode.SceneMesh_clearMaterial(self.__ptr)
 end
@@ -153,10 +140,6 @@ end
 
 function SceneMesh:setFilename(fileName)
 	local retVal = Polycode.SceneMesh_setFilename(self.__ptr, fileName)
-end
-
-function SceneMesh:loadFromFile(fileName)
-	local retVal = Polycode.SceneMesh_loadFromFile(self.__ptr, fileName)
 end
 
 function SceneMesh:customHitDetection(ray)

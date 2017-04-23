@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include "polycode/core/PolyGlobals.h"
 #include "polycode/core/PolySceneMesh.h"
 #include "polycode/core/PolyBezierCurve.h"
-#include "polycode/core/PolyCoreServices.h"
 #include "polycode/core/PolyMesh.h"
 
 namespace Polycode {
@@ -62,7 +61,7 @@ namespace Polycode {
 
 		
 			virtual ~SceneCurve();
-			void Update();
+			void Render(GPUDrawBuffer *buffer);
 		
 		
 			virtual Entity *Clone(bool deepClone, bool ignoreEditorOnly) const;

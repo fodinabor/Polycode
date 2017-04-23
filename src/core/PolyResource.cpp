@@ -21,24 +21,20 @@
 */
 
 #include "polycode/core/PolyResource.h"
-#include "polycode/core/PolyCoreServices.h"
 #include "polycode/core/PolyResourceManager.h"
 
 using namespace Polycode;
 
 bool Resource::defaultReloadOnFileModify = false;
 
-Resource::Resource(int type) : EventDispatcher() {
-	this->type = type;
-	reloadOnFileModify = defaultReloadOnFileModify;
-	resourceFileTime = 0;
-	platformData = NULL;
+Resource::Resource(int type) : EventDispatcher(), type(type), reloadOnFileModify(defaultReloadOnFileModify), resourceFileTime(0)
+{
 }
 
 Resource::~Resource() {
 }
 
-void Resource::reloadResource() {
+void Resource::reloadResource(Core *core) {
 	dispatchEvent(new Event(), Event::RESOURCE_RELOAD_EVENT);
 }
 
