@@ -2,7 +2,6 @@
 #include "polycode/ide/PolycodeWinIDEView.h"
 #include "polycode/ide/PolycodeIDEApp.h"
 #include "polycode/core/PolyWinCore.h"
-#include "polycode/core/PolyCoreServices.h"
 #include "polycode/core/PolyCoreInput.h"
 #include "polycode/core/PolyRenderer.h"
 #include <io.h>

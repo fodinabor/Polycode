@@ -9,6 +9,7 @@
 #include <Pathcch.h>
 
 extern PolycodeIDEApp *globalApp;
+extern Win32Core *core;
 
 using namespace Polycode;
 
@@ -88,8 +89,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	HICON mainIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	SendMessage(view->hwnd, WM_SETICON, ICON_SMALL, (LPARAM) mainIcon );
 
-	registerFileType(".polyproject", "Polycode.ProjectFile.1", CoreServices::getInstance()->getCore()->getDefaultWorkingDirectory()+"\\Polycode.exe \"%1\"", CoreServices::getInstance()->getCore()->getDefaultWorkingDirectory()+"\\Polycode.exe,-103", "Polycode Project");
-	registerFileType(".polyapp", "Polycode.Applicaton.1", CoreServices::getInstance()->getCore()->getDefaultWorkingDirectory()+"\\Standalone\\Player\\PolycodePlayer.exe \"%1\"", CoreServices::getInstance()->getCore()->getDefaultWorkingDirectory()+"\\Polycode.exe,-104", "Polycode Application");
+	registerFileType(".polyproject", "Polycode.ProjectFile.1", core->getDefaultWorkingDirectory()+"\\Polycode.exe \"%1\"", core->getDefaultWorkingDirectory()+"\\Polycode.exe,-103", "Polycode Project");
+	registerFileType(".polyapp", "Polycode.Applicaton.1", core->getDefaultWorkingDirectory()+"\\Standalone\\Player\\PolycodePlayer.exe \"%1\"", core->getDefaultWorkingDirectory()+"\\Polycode.exe,-104", "Polycode Application");
 
 	MSG Msg;
 	do {
