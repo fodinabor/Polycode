@@ -50,11 +50,7 @@ core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1
 	core->getResourceManager()->getGlobalPool()->reloadResourcesOnModify = true;
 	
 	runNextFrame = false;
-	
-	core->addEventListener(this, Core::EVENT_CORE_RESIZE);
-	core->addEventListener(this, Core::EVENT_LOST_FOCUS);
-	core->addEventListener(this, Core::EVENT_GAINED_FOCUS);
-			
+				
 	globalClipboard = new PolycodeClipboard();
 	
 	ResourcePool *globalPool = core->getResourceManager()->getGlobalPool();
@@ -185,7 +181,7 @@ core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1
 	frame->console->applyTheme();
 
 #ifdef USE_POLYCODEUI_MENUBAR
-	menuBar = new UIMenuBar(100, globalMenu);
+	menuBar = new UIMenuBar(core, globalPool, core->getInput(), 100, globalMenu);
 
 	UIMenuBarEntry *fileEntry = menuBar->addMenuBarEntry("File");
 	fileEntry->addItem("New File", "new_file", KEY_n);
@@ -233,6 +229,12 @@ core = new POLYCODE_CORE((PolycodeView*)view, 1100, 700,false,false, 0, 0,60, -1
 	
 	quittingApp = false;
 	
+	core->getInput()->addEventListener(this, InputEvent::EVENT_KEYDOWN);
+	
+
+	core->addEventListener(this, Core::EVENT_CORE_RESIZE);
+	core->addEventListener(this, Core::EVENT_LOST_FOCUS);
+	core->addEventListener(this, Core::EVENT_GAINED_FOCUS);
 	core->getInput()->addEventListener(this, InputEvent::EVENT_KEYDOWN);
 	
 	applyFinalConfig();
@@ -1415,7 +1417,6 @@ bool PolycodeIDEApp::Update() {
 		frame->welcomeEntity->visible =	 true;
 		frame->getConsoleSizer()->enabled = false;		
 	}
-
 
 	bool result = core->systemUpdate();
 	

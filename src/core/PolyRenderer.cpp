@@ -26,8 +26,10 @@
 #include "polycode/core/PolyTexture.h"
 #include "polycode/core/PolyVector4.h"
 #include "polycode/core/PolyLogger.h"
-#if PLATFORM == PLATFORM_ANDROID
-	#include <unistd.h>
+#if PLATFORM == PLATFORM_WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
 

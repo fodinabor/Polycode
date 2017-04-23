@@ -23,7 +23,7 @@ THE SOFTWARE.
 
 #include "polycode/modules/physics2D/PolyPhysicsScreen.h"
 #include "polycode/modules/physics2D/PolyPhysicsScreenEntity.h"
-#include "polycode/core/PolyCoreServices.h"
+// #include "polycode/core/PolyCoreServices.h"
 #include "polycode/core/PolyCore.h"
 
 using namespace Polycode;
@@ -195,11 +195,11 @@ bool PhysicsScene2D::testEntityCollision(Entity *ent1, Entity *ent2) {
 	return false;
 }
 
-PhysicsScene2D::PhysicsScene2D() : Scene(Scene::SCENE_2D) {
+PhysicsScene2D::PhysicsScene2D(Core* core) : Scene(core, Scene::SCENE_2D) {
 	init(10.0f,10,10,Vector2(0.0f, -10.0f));
 }
 
-PhysicsScene2D::PhysicsScene2D(Number worldScale, int velIterations, int posIterations): Scene(Scene::SCENE_2D) {
+PhysicsScene2D::PhysicsScene2D(Core* core, Number worldScale, int velIterations, int posIterations): Scene(core, Scene::SCENE_2D) {
 	init(worldScale, velIterations, posIterations, Vector2(0.0f, -10.0f));
 }
 

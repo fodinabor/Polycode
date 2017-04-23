@@ -95,7 +95,7 @@ namespace Polycode {
 		* @param configNamespace Namespace to get the value from.
 		* @param key String key of the value.
 		*/						
-		const String& getStringValue(const String& configNamespace, const String& key) const;
+		String getStringValue(const Polycode::String& configNamespace, const Polycode::String& key) const;
 
 		/**
 		* Sets a string value that represents boolean (true|false) key.

@@ -650,6 +650,7 @@ bool PolycodeTextEditor::openFile(OSFileEntry filePath) {
 	
 	findBar = new FindBar(core, resourcePool);
 	findBar->visible = false;
+	findBar->enabled = false;
 	addChild(findBar);
 	
 	findBar->findInput->addEventListener(this, Event::COMPLETE_EVENT);
@@ -766,6 +767,7 @@ void PolycodeTextEditor::handleEvent(Event *event) {
 
 void PolycodeTextEditor::showFindBar() {
 	findBar->visible = true;
+	findBar->enabled = true;
 	findBar->focusChild(findBar->findInput);
 	findBar->findInput->selectAll();
 	lastFindString = "";
@@ -793,6 +795,7 @@ void PolycodeTextEditor::showFindBar() {
 
 void PolycodeTextEditor::hideFindBar() {
 	findBar->visible = false;
+	findBar->enabled = false;
 	focusChild(textInput);
 	Resize(editorSize.x, editorSize.y);
 }
@@ -813,7 +816,7 @@ void PolycodeTextEditor::saveFile() {
 
 void PolycodeTextEditor::Resize(int x, int y) {
 
-	findBar->setBarWidth(x);	
+	findBar->setBarWidth(x);
 	
 	if(findBar->visible) {
 		textInput->Resize(x,y-findBar->getHeight());
@@ -872,7 +875,7 @@ FindBar::FindBar(Core *core, ResourcePool *pool) : UIElement(core) {
 	addChild(closeButton);
 }
 
-void FindBar::onKeyDown(PolyKEY key, wchar_t charCode) {
+void FindBar::onKeyDown(PolyKEY key) {
 	if(key == KEY_TAB) {
 		focusNextChild();
 	}
