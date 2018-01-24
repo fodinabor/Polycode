@@ -164,7 +164,7 @@ namespace Polycode {
 	class SceneSprite : public SceneMesh {
 	public:
 		SceneSprite(){}
-		SceneSprite(SpriteSet *spriteSet);
+		SceneSprite(SpriteSet *spriteSet, std::shared_ptr<Material> material);
 		~SceneSprite();
 		
 		Entity *Clone(bool deepClone, bool ignoreEditorOnly) const;
@@ -180,7 +180,7 @@ namespace Polycode {
 		
 		void setCurrentFrame(unsigned int frameIndex);
 		unsigned int getCurrentFrame();
-		void Update();
+		void Update(Number elapsed);
 		void Render(GPUDrawBuffer *buffer);
 		
 		Vector3 getSpriteBoundingBox() const;

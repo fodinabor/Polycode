@@ -31,10 +31,11 @@ using std::vector;
 using namespace Polycode;
 
 
-SceneSprite::SceneSprite(SpriteSet *spriteSet) : SceneMesh() {
+SceneSprite::SceneSprite(SpriteSet *spriteSet, std::shared_ptr<Material> material) : SceneMesh() {
 	currentSprite = NULL;
 	currentSpriteState = NULL;
 	this->spriteSet = NULL;
+	setMaterial(material);
 	setSpriteSet(spriteSet);
 	defaultMesh = mesh;
 	currentFrame = 0;
@@ -58,7 +59,7 @@ void SceneSprite::setStartOnRandomFrame(bool val) {
 }
 
 Entity *SceneSprite::Clone(bool deepClone, bool ignoreEditorOnly) const {
-	SceneSprite *newSprite = new SceneSprite(spriteSet);
+	SceneSprite *newSprite = new SceneSprite(spriteSet, material);
 	newSprite->setSprite(currentSprite);
 	newSprite->setSpriteState(currentSpriteState, currentFrame, playOnce);
 	newSprite->setStartOnRandomFrame(startOnRandomFrame);
@@ -204,7 +205,7 @@ void SceneSprite::setSpriteState(SpriteState *spriteState, unsigned int starting
 	
 }
 
-void SceneSprite::Update() {
+void SceneSprite::Update(Number elapsed) {
 	
 	if(!currentSprite || !currentSpriteState) {
 		return;
@@ -220,7 +221,7 @@ void SceneSprite::Update() {
 		return;
 	}
 	
-	spriteTimer += core->getElapsed();
+	spriteTimer += elapsed;
 	
 	if(spriteTimer > 1.0/currentSpriteState->getStateFPS()) {
 		spriteTimer = 0.0;

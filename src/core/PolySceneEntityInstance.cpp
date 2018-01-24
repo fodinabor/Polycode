@@ -316,7 +316,7 @@ Entity *SceneEntityInstance::loadObjectEntryIntoEntity(ObjectEntry *entry, Entit
 			 SpriteSet *spriteSet = (SpriteSet*)core->getResourceManager()->getResourcePoolByName(spriteSetName);
 			 
 			 if(spriteSet) {
-				 SceneSprite *sprite = new SceneSprite(spriteSet);
+				 SceneSprite *sprite = new SceneSprite(spriteSet, core->getResourceManager()->getGlobalPool()->getMaterial("Unlit"));
 				 
 				 String spriteName = (*spriteEntry)["sprite"]->stringVal;
 				 sprite->setSpriteByName(spriteName);

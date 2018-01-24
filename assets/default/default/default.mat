@@ -102,14 +102,6 @@
 				</params>					
 			</shader>
 		</material>
-		<material name="DefaultTexturedAnimated">
-			<shader name="DefaultShaderAnimated">
-				<params>
-					<param name="entityColor" value="1.0 1.0 1.0 1.0" />
-					<param name="diffuse_color" value="1.0 1.0 1.0 1.0" />
-				</params>					
-			</shader>
-		</material>		
 		<material name="DefaultTextured">
 			<shader name="DefaultShader">
 				<params>

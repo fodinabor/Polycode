@@ -44,8 +44,8 @@ function SceneSprite:getCurrentFrame()
 	return retVal
 end
 
-function SceneSprite:Update()
-	local retVal =  Polycode.SceneSprite_Update(self.__ptr)
+function SceneSprite:Update(elapsed)
+	local retVal = Polycode.SceneSprite_Update(self.__ptr, elapsed)
 end
 
 function SceneSprite:getSpriteBoundingBox()

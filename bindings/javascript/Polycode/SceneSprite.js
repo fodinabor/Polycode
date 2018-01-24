@@ -28,8 +28,8 @@ SceneSprite.prototype.getCurrentFrame = function() {
 	return Polycode.SceneSprite_getCurrentFrame(this.__ptr)
 }
 
-SceneSprite.prototype.Update = function() {
-	Polycode.SceneSprite_Update(this.__ptr)
+SceneSprite.prototype.Update = function(elapsed) {
+	Polycode.SceneSprite_Update(this.__ptr, elapsed)
 }
 
 SceneSprite.prototype.getSpriteBoundingBox = function() {
